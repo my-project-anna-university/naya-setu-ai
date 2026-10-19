@@ -18,6 +18,85 @@ import Badge from '../components/common/Badge';
 import toast from 'react-hot-toast';
 import { AI_SUGGESTED_QUESTIONS, RIGHTS_CATEGORIES_DATA } from '../data/mockData';
 
+// Markdown formatters for bot message bubbles
+const renderInlineFormatting = (text) => {
+  if (!text) return null;
+  const parts = [];
+  let remaining = text;
+  let key = 0;
+
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/^(.*?)\*\*(.+?)\*\*(.*)$/);
+    const italicMatch = remaining.match(/^(.*?)\*(.+?)\*(.*)$/);
+
+    if (boldMatch) {
+      if (boldMatch[1]) parts.push(<span key={key++}>{boldMatch[1]}</span>);
+      parts.push(<strong key={key++} className="font-semibold text-slate-900">{boldMatch[2]}</strong>);
+      remaining = boldMatch[3];
+    } else if (italicMatch) {
+      if (italicMatch[1]) parts.push(<span key={key++}>{italicMatch[1]}</span>);
+      parts.push(<em key={key++} className="italic text-slate-700">{italicMatch[2]}</em>);
+      remaining = italicMatch[3];
+    } else {
+      parts.push(<span key={key++}>{remaining}</span>);
+      break;
+    }
+  }
+
+  return parts;
+};
+
+const renderMessageLine = (line, idx, isBot) => {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  if (trimmed === '---') {
+    return <hr key={idx} className="my-2.5 border-slate-200" />;
+  }
+
+  if (trimmed.startsWith('### ')) {
+    return (
+      <h3 key={idx} className={`font-bold mt-2.5 mb-1 text-base ${isBot ? 'text-primary-800' : 'text-white'}`}>
+        {trimmed.replace('### ', '')}
+      </h3>
+    );
+  }
+
+  if (trimmed.startsWith('#### ')) {
+    return (
+      <h4 key={idx} className={`font-semibold mt-2 mb-0.5 text-sm ${isBot ? 'text-slate-800' : 'text-slate-100'}`}>
+        {trimmed.replace('#### ', '')}
+      </h4>
+    );
+  }
+
+  if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+    const content = trimmed.substring(2);
+    return (
+      <div key={idx} className="flex items-start gap-2 pl-2 text-xs sm:text-sm my-0.5">
+        <span className={`font-bold shrink-0 mt-0.5 ${isBot ? 'text-secondary-500' : 'text-amber-300'}`}>•</span>
+        <span className="flex-1">{isBot ? renderInlineFormatting(content) : content}</span>
+      </div>
+    );
+  }
+
+  const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+  if (numMatch) {
+    return (
+      <div key={idx} className="flex items-start gap-2 pl-2 text-xs sm:text-sm my-0.5">
+        <span className={`font-bold shrink-0 mt-0.5 ${isBot ? 'text-primary-700' : 'text-amber-300'}`}>{numMatch[1]}.</span>
+        <span className="flex-1">{isBot ? renderInlineFormatting(numMatch[2]) : numMatch[2]}</span>
+      </div>
+    );
+  }
+
+  return (
+    <p key={idx} className="text-xs sm:text-sm my-1 leading-relaxed">
+      {isBot ? renderInlineFormatting(trimmed) : trimmed}
+    </p>
+  );
+};
+
 export const LegalChatbot = () => {
   const [searchParams] = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
@@ -78,12 +157,60 @@ export const LegalChatbot = () => {
   }, [initialQuery]);
 
   const getKnowledgeResponse = (query, cat) => {
-    const qLower = query.toLowerCase();
-    const tokens = qLower.split(/[^a-zA-Z0-9]+/).filter((t) => t.length > 2);
+    const qLower = (query || '').toLowerCase().trim();
+    const tokens = qLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+    const wordCount = tokens.length;
 
+    // 1. GREETING INTENT
+    const greetings = ['hi', 'hello', 'hey', 'namaste', 'namaskar', 'pranam', 'vanakkam', 'adab'];
+    if (tokens.some((t) => greetings.includes(t)) && wordCount <= 3) {
+      return {
+        text: `### 🙏 Namaste! I am NyayaSetu AI\n\n` +
+          `I am your personal **Indian Citizen Legal Rights & Welfare Advisor**. I can help you understand your legal protections, check welfare scheme eligibility, and provide actionable dispute resolution steps under Indian law.\n\n` +
+          `---\n\n` +
+          `#### ⚖️ What you can ask me:\n` +
+          `* 🛒 **Consumer Rights:** Defective products, unfair trade practices, refund delays.\n` +
+          `* 💼 **Workplace & Labor:** Unpaid salary, wrongful termination, PF/Gratuity dues.\n` +
+          `* 🏠 **Tenancy & Landlord:** Illegal eviction, security deposit refusal, power/water cuts.\n` +
+          `* 💻 **Cyber Frauds:** UPI banking scams, 1930 Golden Hour freeze, loan app harassment.\n` +
+          `* 🚓 **Police & Criminal Law:** Zero FIR rights, arrest safeguards, bail procedures.\n` +
+          `* 📜 **RTI Applications:** Accessing municipal tenders and public project records.\n\n` +
+          `💡 *Try asking: "My landlord locked me out without notice" or "Employer withheld my 2 months salary".*`,
+        citations: ['Constitution of India (Article 39A)']
+      };
+    }
+
+    // 2. CAPABILITY INTENT
+    const capabilityKeywords = ['what can you do', 'what do you do', 'who are you', 'how can you help', 'help', 'features', 'about you'];
+    if (capabilityKeywords.some((p) => qLower.includes(p)) || (wordCount <= 2 && tokens.includes('help'))) {
+      return {
+        text: `### ⚖️ About NyayaSetu AI & Citizen Advisory\n\n` +
+          `**NyayaSetu** (*"Bridge to Justice"*) is an AI-powered legal advisory engine designed for Indian citizens.\n\n` +
+          `---\n\n` +
+          `#### Key Capabilities:\n` +
+          `1. **Statutory Legal Advisory:** Accurate analysis under Consumer Protection Act 2019, Code on Wages, Model Tenancy Act, BNSS/BNS 2023, and IT Act 2000.\n` +
+          `2. **Government Schemes Matching:** Instant eligibility checking for 25+ central & state welfare programs (PM-Kisan, Ayushman Bharat, PMAY).\n` +
+          `3. **1-Click Legal Document Drafter:** Ready-to-use templates for RTI applications, legal notices, and police complaints.\n` +
+          `4. **Free Legal Aid (Article 39A):** Direct connections to District Legal Services Authorities (DLSA) for free advocate representation.\n\n` +
+          `💡 *Type any legal query in plain English or Hinglish to receive actionable guidance!*`,
+        citations: ['Constitution of India (Article 39A)', 'Legal Services Authorities Act 1987']
+      };
+    }
+
+    // 3. GRATITUDE INTENT
+    if (['thank you', 'thanks', 'dhanyawad', 'shukriya', 'bye', 'goodbye'].some((p) => qLower.includes(p)) && wordCount <= 4) {
+      return {
+        text: `### 🙏 You're Very Welcome!\n\n` +
+          `Knowing your statutory rights is your greatest protection as a citizen. If you need to generate a formal notice or check government welfare schemes, NyayaSetu is always here for you.\n\n` +
+          `*Stay empowered and know your rights! ⚖️*`,
+        citations: []
+      };
+    }
+
+    // 4. DOMAIN MATCHING
     let bestCategory = RIGHTS_CATEGORIES_DATA[0];
     let bestSection = bestCategory.sections[0];
-    let highestScore = -1;
+    let highestScore = 0;
 
     RIGHTS_CATEGORIES_DATA.forEach((category) => {
       category.sections.forEach((sec) => {
@@ -94,14 +221,14 @@ export const LegalChatbot = () => {
           if (corpus.includes(tok)) score += tok.length > 4 ? 3 : 2;
         });
 
-        if (qLower.includes('salary') && category.id.includes('labor')) score += 10;
-        if (qLower.includes('police') && category.id.includes('criminal')) score += 10;
-        if (qLower.includes('phone') && (corpus.includes('privacy') || category.id.includes('criminal'))) score += 10;
-        if (qLower.includes('landlord') && (corpus.includes('tenant') || corpus.includes('rent') || category.id.includes('property'))) score += 10;
+        if (qLower.includes('salary') && category.id.includes('labor')) score += 12;
+        if (qLower.includes('police') && category.id.includes('criminal')) score += 12;
+        if (qLower.includes('phone') && (corpus.includes('privacy') || category.id.includes('criminal'))) score += 12;
+        if (qLower.includes('landlord') && (corpus.includes('tenant') || corpus.includes('rent') || category.id.includes('property'))) score += 12;
         if (qLower.includes('cyber') || qLower.includes('upi') || qLower.includes('scam') || qLower.includes('otp')) {
-          if (category.id.includes('cyber') || corpus.includes('cyber')) score += 12;
+          if (category.id.includes('cyber') || corpus.includes('cyber')) score += 15;
         }
-        if (qLower.includes('fir') && corpus.includes('fir')) score += 12;
+        if (qLower.includes('fir') && corpus.includes('fir')) score += 15;
 
         if (score > highestScore) {
           highestScore = score;
@@ -111,16 +238,36 @@ export const LegalChatbot = () => {
       });
     });
 
+    // If zero score on legal keywords and no category selected:
+    if (highestScore === 0) {
+      return {
+        text: `### ⚖️ NyayaSetu Citizen Legal Inquiry\n\n` +
+          `I analyzed your query: *"${query}"*.\n\n` +
+          `To give you the exact Indian legal provisions and action steps, please let me know what legal area your dispute involves:\n\n` +
+          `* 🛒 **Consumer / Purchase:** Defective product, refused refund, misleading charges.\n` +
+          `* 💼 **Workplace / Employment:** Unpaid wages, wrongful termination, PF/Gratuity disputes.\n` +
+          `* 🏠 **Tenancy / Property:** Landlord lockout, utility cut, deposit dispute, builder delay.\n` +
+          `* 💻 **Cyber / Financial Fraud:** Unauthorized UPI debit, loan app extortion, fake accounts.\n` +
+          `* 🚓 **Police / Criminal Law:** FIR refusal, Zero FIR, arrest rights, bail.\n\n` +
+          `Reply with a brief description and I will cite the exact Indian laws and remedies!`,
+        citations: ['Constitution of India (Article 39A)']
+      };
+    }
+
     const applicableLaws = bestCategory.lawsGoverning || [];
-    const text = `### ⚖️ Statutory Legal Analysis: ${bestCategory.name}\n\n` +
-      `**Core Right:** **${bestSection.title}**\n\n` +
-      `**Statutory Provision:** ${bestSection.content}\n\n` +
-      (bestSection.penalty ? `**Legal Penalty on Violator:** ${bestSection.penalty}\n\n` : '') +
-      `### Recommended Action Steps:\n` +
+    const text = `### ⚖️ Legal Advisory: ${bestCategory.name}\n\n` +
+      `Under Indian law, citizens are protected under the provisions of the **${applicableLaws[0] || 'applicable statute'}**.\n\n` +
+      `---\n\n` +
+      `#### 1. Your Statutory Right\n` +
+      `* **${bestSection.title}:** ${bestSection.content}\n` +
+      (bestSection.penalty ? `* **Legal Penalty on Violator:** ${bestSection.penalty}\n` : '') +
+      `* **Constitutional Guarantee:** Under **Article 39A of the Constitution of India**, every citizen has the fundamental right to equal justice and free legal aid.\n\n` +
+      `#### 2. Recommended Action Steps\n` +
       `1. **Gather Evidence:** Maintain written communication, invoices, timestamps, emails, and transaction receipts.\n` +
       `2. **Statutory Demand Notice:** Issue a formal 15-day legal notice giving the opposite party opportunity to rectify.\n` +
-      `3. **Approaching Legal Forum:** If unrectified, approach the competent authority or your local District Legal Services Authority (DLSA) under Article 39A.\n\n` +
-      `💡 *You can generate an official document or notice in 1-click in the **Document Generator**.*`;
+      `3. **Approaching Legal Forum:** If unrectified, approach the competent statutory authority or your local District Legal Services Authority (DLSA) under Article 39A.\n\n` +
+      `--- \n` +
+      `💡 *You can generate an official document or notice in 1-click in the **NyayaSetu Document Generator**.*`;
 
     return {
       text,
@@ -302,23 +449,13 @@ export const LegalChatbot = () => {
                         : 'bg-primary-800 text-white shadow-md'
                     }`}
                   >
-                    {/* Render message text with simple markdown support */}
-                    <div className="whitespace-pre-line space-y-2">
-                      {msg.text.split('\n\n').map((paragraph, pIdx) => {
-                        // Check if paragraph is heading
-                        if (paragraph.startsWith('### ')) {
-                          return (
-                            <h4 key={pIdx} className={`font-bold mt-3 text-base ${isBot ? 'text-primary-800' : 'text-white'}`}>
-                              {paragraph.replace('### ', '')}
-                            </h4>
-                          );
-                        }
-                        return <p key={pIdx}>{paragraph}</p>;
-                      })}
+                    {/* Render message text with structured markdown formatting */}
+                    <div className="space-y-1">
+                      {msg.text.split('\n').map((line, lIdx) => renderMessageLine(line, lIdx, isBot))}
                     </div>
 
                     {/* Legal Citations & References if available */}
-                    {isBot && msg.citations && msg.citations.length > 0 && (
+                    {isBot && msg.citations && msg.citations.length > 0 && !msg.text.includes('### 🙏') && (
                       <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                           <FaBalanceScale className="w-3 h-3 text-secondary-500" />

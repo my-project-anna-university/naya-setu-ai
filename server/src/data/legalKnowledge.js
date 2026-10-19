@@ -586,21 +586,427 @@ export const legalKnowledgeBase = {
 /**
  * Advanced Semantic Legal Analysis & Statutory Matching Engine
  * Accurately analyzes citizen inquiries against Indian statutes, sections, and rights.
+ * Handles conversational intents (greetings, capabilities, gratitude, clarifications)
+ * and formats natural, empathetic, actionable legal advice under Indian law.
  */
 export function queryKnowledgeBase(queryText, requestedCategory = null) {
   const rawQuery = (queryText || '').trim();
   const query = rawQuery.toLowerCase();
   
+  // Clean tokens (remove punctuation)
+  const tokens = query.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  const wordCount = tokens.length;
+
+  // =========================================================================
+  // INTENT 1: GREETINGS (hi, hello, namaste, good morning, etc.)
+  // =========================================================================
+  const greetingWords = ['hi', 'hello', 'hey', 'namaste', 'namaskar', 'pranam', 'vanakkam', 'adab', 'hola', 'greetings'];
+  const hasGreetingWord = tokens.some((t) => greetingWords.includes(t));
+  const isTimeGreeting = query.includes('good morning') || query.includes('good afternoon') || query.includes('good evening');
+  const legalKeywordsPresent = tokens.some((t) =>
+    ['fir', 'police', 'rent', 'landlord', 'salary', 'fraud', 'arrest', 'case', 'court', 'refund', 'money', 'scam', 'mrp', 'wage', 'tenant', 'bail', 'posh', 'rti', 'cheated'].includes(t)
+  );
+
+  const isGreeting = (wordCount <= 3 && (hasGreetingWord || isTimeGreeting)) ||
+    (wordCount <= 5 && (hasGreetingWord || isTimeGreeting) && !legalKeywordsPresent);
+
+  if (isGreeting) {
+    const fullAnswer = `### 🙏 Namaste! I am NyayaSetu AI
+
+I am your personal **Indian Citizen Legal Rights & Welfare Advisor**. I am here to assist you with plain-language explanations of Indian laws, your enforceable statutory rights, official dispute resolution procedures, and government schemes.
+
+---
+
+#### ⚖️ How I can assist you:
+* 🛒 **Consumer Rights & E-Commerce:** Defective goods, refused refunds, hidden charges, misleading advertisements (*Consumer Protection Act, 2019 & e-Daakhil*).
+* 💼 **Workplace & Employment:** Unpaid wages, illegal termination, withheld PF or Gratuity, notice period disputes (*Code on Wages 2019 & Industrial Disputes Act*).
+* 🏠 **Tenancy & Property:** Unlawful eviction, builder delivery delays, security deposit withholding (*Model Tenancy Act & RERA 2016*).
+* 💻 **Cyber Crime & Online Fraud:** UPI/banking scams, 1930 Golden Hour freeze, loan app extortion, cyberstalking (*IT Act 2000*).
+* 🚓 **Police & Criminal Procedure:** Right to register FIR / Zero FIR, arrest safeguards (*D.K. Basu guidelines*), bail procedures (*BNSS 2023 & BNS 2023*).
+* 👩 **Women's Rights & Protections:** Workplace harassment (*POSH Act*), domestic violence remedies, maternity benefit protections.
+* 📜 **RTI & Citizen Inquiries:** Filing RTI requests to inspect public projects, government fund spending, and certified records.
+
+---
+
+💡 **You can ask me questions like:**
+* *"My landlord disconnected electricity and locked me out without notice. What are my rights?"*
+* *"Employer is withholding my 3 months salary after resignation. How can I recover it?"*
+* *"Someone debited ₹30,000 via UPI fraudulently without OTP. What should I do right now?"*
+* *"Can police stop me at night and force me to unlock my smartphone?"*
+
+What legal or citizen issue would you like help with today?`;
+
+    return {
+      category: 'general',
+      categoryTitle: 'NyayaSetu Citizen Legal Companion',
+      summary: 'Namaste! NyayaSetu AI provides guidance on Indian statutory laws, citizen rights, government schemes, and dispute remedies.',
+      keyRights: [
+        'Right to Legal Awareness and Equal Justice under Article 39A of the Constitution of India',
+        'Statutory Remedies across Consumer, Labor, Property, Criminal, Cyber, and Family Law',
+      ],
+      applicableLaws: ['Constitution of India (Article 39A - Equal Justice and Free Legal Aid)'],
+      recommendedActions: [
+        'Describe your legal dispute or question in simple plain English or Hinglish.',
+        'Include key details (dates, financial transactions, agreements, actions taken).',
+        'Use the Document Drafter for 1-click legal notices, RTI forms, or police complaints.',
+      ],
+      helplines: [
+        'National Legal Services Authority (NALSA): 15100',
+        'National Emergency Helpline: 112',
+        'National Consumer Helpline: 1915',
+        'National Cyber Crime Helpline: 1930',
+      ],
+      sourceRef: 'Constitution of India (Article 39A)',
+      fullAnswer,
+    };
+  }
+
+  // =========================================================================
+  // INTENT 2: CAPABILITIES / HELP / IDENTITY / ABOUT
+  // =========================================================================
+  const capabilityPatterns = [
+    'what can you do', 'what do you do', 'who are you', 'what are you',
+    'how can you help', 'how do you work', 'what is this', 'what is nyayasetu',
+    'what can i ask', 'what can i do', 'help me', 'help', 'features',
+    'guide me', 'how to use', 'about you', 'tell me about yourself',
+    'your capabilities', 'capabilities', 'what are your services',
+    'what services', 'how to use this', 'can you help me'
+  ];
+
+  const isCapabilityQuery = capabilityPatterns.some((pattern) => query.includes(pattern)) ||
+    (wordCount <= 2 && tokens.includes('help') && !legalKeywordsPresent);
+
+  if (isCapabilityQuery) {
+    const fullAnswer = `### ⚖️ About NyayaSetu AI & What I Can Do
+
+**NyayaSetu** (*"Bridge to Justice"*) is an AI-powered legal advisory and citizen empowerment engine designed specifically for **Indian citizens**, bridging the gap between complex legal codes and everyday citizen problems.
+
+---
+
+#### 1. 📖 Statutory Legal Advisory
+I analyze your legal issues against Indian statutory provisions and landmark judicial rulings:
+* **Consumer Protection:** Defective products, unfair trade practices, warranty denial, e-commerce refund delays (**Consumer Protection Act, 2019**).
+* **Labor & Employment:** Withheld wages, PF/Gratuity claims, unlawful termination, overtime pay (**Code on Wages, 2019 & Industrial Disputes Act, 1947**).
+* **Tenancy & Real Estate:** Illegal eviction, security deposit withholding, RERA builder delays (**Model Tenancy Act & RERA, 2016**).
+* **Police & Criminal Law:** FIR & Zero FIR rights, search/seizure rules, arrest guidelines (**BNSS 2023, BNS 2023 & D.K. Basu Guidelines**).
+* **Cyber Crime & Digital Safety:** Online financial fraud, UPI recovery within the "Golden Hour", identity theft, RBI zero-liability rules (**IT Act, 2000**).
+* **Women's Rights & Protections:** Workplace sexual harassment (**POSH Act, 2013**), domestic violence protection, maternity benefits (**Maternity Benefit Act, 2017**).
+* **Constitutional Rights & RTI:** Fundamental rights enforcement (Articles 14–32), government transparency (**RTI Act, 2005**).
+
+#### 2. 🏛️ Government Schemes Matching
+Access criteria and instant eligibility checking for 25+ central and state schemes including **PM-Kisan, Ayushman Bharat (PM-JAY), PM Awas Yojana, Mudra Loans, and Sukanya Samriddhi**.
+
+#### 3. 📄 1-Click Document Generator
+Create formal, professionally formatted legal drafts instantly:
+* **RTI Applications** to government departments and PIOs.
+* **Statutory Legal Notices** for unpaid salaries or consumer grievances.
+* **Formal Police Complaints** for theft, cyber fraud, or harassment.
+* **Consumer Dispute Notices** before approaching District Commissions.
+
+#### 4. 📍 Free Legal Aid (DLSA Connect)
+Under **Article 39A of the Constitution** and the **Legal Services Authorities Act, 1987**, marginalized citizens, women, children, and low-income families are entitled to **100% free legal aid and advocate representation**.
+
+---
+
+💡 **Try asking a question right now:**
+* *"A shopkeeper charged ₹15 above MRP for a cold beverage. Is that legal?"*
+* *"What is the procedure if police refuse to register an FIR for mobile theft?"*
+* *"Employer is refusing to provide my experience letter and relieving documents."*
+* *"How can I file an RTI to inspect public road maintenance funds?"*`;
+
+    return {
+      category: 'general',
+      categoryTitle: 'NyayaSetu Capabilities & Guidance',
+      summary: 'NyayaSetu AI guides Indian citizens through statutory legal rights, government schemes, document drafting, and free legal aid.',
+      keyRights: [
+        'Article 39A, Constitution of India (Equal Justice and Free Legal Aid)',
+        'Right to Information under RTI Act, 2005',
+        'Right to Redressal under Consumer Protection Act, 2019 and relevant labor statutes',
+      ],
+      applicableLaws: [
+        'Constitution of India (Articles 14, 21, 39A)',
+        'Legal Services Authorities Act, 1987',
+        'Consumer Protection Act, 2019',
+        'Bharatiya Nyaya Sanhita, 2023 & BNSS, 2023',
+        'Information Technology Act, 2000',
+        'Real Estate (Regulation and Development) Act, 2016',
+      ],
+      recommendedActions: [
+        'Type your specific legal dispute or concern in simple plain English.',
+        'Explore welfare schemes using the Schemes Finder module.',
+        'Generate official legal notices and RTI drafts in the Document Drafter.',
+        'Find your local District Legal Services Authority (DLSA) for free representation.',
+      ],
+      helplines: [
+        'National Legal Services Authority (NALSA): 15100',
+        'National Consumer Helpline: 1915',
+        'National Cyber Crime Helpline: 1930',
+        'National Emergency Number: 112',
+      ],
+      sourceRef: 'Constitution of India (Article 39A)',
+      fullAnswer,
+    };
+  }
+
+  // =========================================================================
+  // INTENT 3: GRATITUDE & FAREWELL
+  // =========================================================================
+  const gratitudePhrases = ['thank you', 'thanks', 'thank u', 'thx', 'dhanyawad', 'shukriya', 'thankyou', 'bye', 'goodbye', 'see you', 'cya'];
+  const isGratitude = gratitudePhrases.some((p) => query.includes(p)) && wordCount <= 5;
+
+  if (isGratitude) {
+    const fullAnswer = `### 🙏 You're Very Welcome!
+
+I'm glad I could assist you. In a constitutional democracy, **awareness of your legal rights is your greatest shield**.
+
+---
+
+#### Quick Next Steps:
+* 📄 If you need a formal written draft, head over to the **Document Drafter** to generate a legal notice, RTI application, or complaint in 1-click.
+* 🏛️ Check out the **Schemes Finder** to verify benefits and eligibility for central/state welfare programs.
+* 📍 If you need a lawyer at zero cost, reach out to your local **District Legal Services Authority (DLSA)** or dial NALSA helpline **15100**.
+
+Feel free to ask whenever you need legal guidance. *Stay empowered and know your rights! ⚖️*`;
+
+    return {
+      category: 'general',
+      categoryTitle: 'NyayaSetu Citizen Legal Companion',
+      summary: 'You are welcome! Feel free to reach out anytime for Indian legal guidance and citizen rights.',
+      keyRights: ['Right to Equal Justice and Free Legal Aid (Article 39A)'],
+      applicableLaws: ['Legal Services Authorities Act, 1987'],
+      recommendedActions: [
+        'Save any reference documents or statutory section citations provided.',
+        'Use the Document Drafter if formal communication is required.',
+        'Approach DLSA under Article 39A for free advocate representation.',
+      ],
+      helplines: ['NALSA Toll-Free Helpline: 15100', 'National Emergency: 112'],
+      sourceRef: 'Legal Services Authorities Act, 1987',
+      fullAnswer,
+    };
+  }
+
+  // =========================================================================
+  // INTENT 4: OUT-OF-SCOPE / NON-LEGAL QUERIES
+  // =========================================================================
+  const offTopicTriggers = [
+    'bake a cake', 'recipe', 'python code', 'javascript code', 'write code',
+    'tell me a joke', 'sing a song', 'cricket match', 'weather today',
+    'movie review', 'solve math', 'calculate 2', 'who won the match'
+  ];
+  const isOffTopic = offTopicTriggers.some((t) => query.includes(t));
+
+  if (isOffTopic) {
+    const fullAnswer = `### ⚖️ NyayaSetu AI — Scope of Advisory
+
+I am **NyayaSetu AI**, specialized exclusively in **Indian Law, citizen statutory rights, government welfare schemes, and dispute remedies**.
+
+I am not equipped to handle general non-legal topics (such as coding, entertainment, or recipes), but I am here to help you resolve real-world legal and citizen problems:
+* 🛒 **Consumer Disputes & Refunds:** Defective goods, warranty issues, e-commerce delivery delays.
+* 💼 **Workplace & Labor Rights:** Unpaid wages, PF/Gratuity claims, unlawful termination.
+* 🏠 **Tenancy & Landlord Issues:** Disconnection of utilities, illegal eviction, deposit disputes.
+* 💻 **Cyber Crime & Financial Fraud:** Unauthorized UPI debit, online scams, cyberstalking.
+* 🚓 **Police & Criminal Law:** FIR registration, Zero FIR, arrest safeguards, bail rules.
+* 📜 **RTI Applications & Public Services:** Accessing government project records and public funds data.
+* 🏛️ **Government Welfare Schemes:** Checking your eligibility for PM-Kisan, Ayushman Bharat, PMAY, etc.
+
+Please feel free to describe any legal or citizen dispute you are facing!`;
+
+    return {
+      category: 'general',
+      categoryTitle: 'NyayaSetu Legal Companion',
+      summary: 'NyayaSetu AI is dedicated to Indian law, citizen statutory rights, and government schemes.',
+      keyRights: ['Access to Justice and Legal Information (Article 39A)'],
+      applicableLaws: ['Constitution of India (Article 39A)'],
+      recommendedActions: [
+        'Ask questions related to Indian law, consumer disputes, employment, property, or cyber fraud.',
+        'Check government scheme eligibility in the Schemes Finder.',
+        'Draft legal notices and RTI applications in the Document Drafter.',
+      ],
+      helplines: ['National Consumer Helpline: 1915', 'National Cyber Crime Helpline: 1930', 'NALSA: 15100'],
+      sourceRef: 'Constitution of India',
+      fullAnswer,
+    };
+  }
+
+  // =========================================================================
+  // INTENT 5: SHORT / AMBIGUOUS SINGLE-TOPIC CLARIFICATIONS
+  // =========================================================================
+  if (wordCount <= 2 && !requestedCategory) {
+    // 1. Tenancy / Rent
+    if (tokens.some((t) => ['landlord', 'tenant', 'rent'].includes(t))) {
+      return {
+        category: 'property',
+        categoryTitle: 'Property & Tenancy Law',
+        summary: 'Tenancy guidance: Protection against arbitrary eviction, deposit withholding, and utility disconnection.',
+        keyRights: [
+          'Protection against arbitrary eviction (Model Tenancy Act & Section 108 Transfer of Property Act)',
+          'Right to essential utilities (water, electricity) without disconnection',
+        ],
+        applicableLaws: ['Model Tenancy Act, 2021', 'Transfer of Property Act, 1882', 'Section 6, Specific Relief Act, 1963'],
+        recommendedActions: ['Provide details of your rent agreement and current dispute.'],
+        helplines: ['National Consumer Helpline: 1915', 'NALSA Free Legal Aid: 15100'],
+        sourceRef: 'Model Tenancy Act, 2021',
+        fullAnswer: `### 🏠 Tenancy & Landlord Advisory: Clarification
+
+Are you experiencing a dispute with your landlord or tenant? Please let me know which of these situations you are facing:
+
+1. **Illegal Eviction / Lockout:** Landlord threatening to evict you without 30 days notice or without a court order (*unlawful under Model Tenancy Act & Specific Relief Act*).
+2. **Disconnection of Utilities:** Landlord cutting off electricity, water, or access (*actionable criminal trespass & civil violation*).
+3. **Security Deposit Dispute:** Landlord refusing to return your security deposit after vacating (*recoverable through statutory demand notice & civil court/rent authority*).
+4. **Arbitrary Rent Hike:** Unreasonable rent increase contrary to your registered rental agreement.
+
+💡 **Please reply with a brief description of what happened, and I will cite the exact legal sections and step-by-step remedies under Indian law.**`,
+      };
+    }
+
+    // 2. Police / FIR
+    if (tokens.some((t) => ['police', 'fir', 'arrest', 'bail'].includes(t))) {
+      return {
+        category: 'criminal',
+        categoryTitle: 'Criminal Law & Police Procedures',
+        summary: 'Criminal & Police guidance: FIR registration, Zero FIR, D.K. Basu arrest safeguards, and bail rules.',
+        keyRights: [
+          'Right to register FIR / Zero FIR (Section 173 BNSS / Section 154 CrPC)',
+          'Right to legal aid and medical examination upon arrest (Article 22 Constitution of India)',
+        ],
+        applicableLaws: ['Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)', 'Bharatiya Nyaya Sanhita, 2023 (BNS)', 'Constitution of India (Articles 20, 21, 22)'],
+        recommendedActions: ['Specify whether police refused an FIR, stopped you, or detained someone.'],
+        helplines: ['National Emergency Number: 112', 'NALSA Free Legal Aid: 15100', 'NHRC Helpline: 14433'],
+        sourceRef: 'Bharatiya Nagarik Suraksha Sanhita, 2023',
+        fullAnswer: `### 🚓 Police & Criminal Law Advisory: Clarification
+
+Are you seeking assistance regarding police procedures or criminal law? Please clarify your issue:
+
+1. **Refusal to File FIR:** Station House Officer (SHO) refused to accept or register your complaint (*Zero FIR is mandatory under Section 173 BNSS*).
+2. **Police Stop / Phone Search:** Questions regarding whether an officer can search your private smartphone without a warrant or search order (*protected under Article 20(3) and Puttaswamy privacy ruling*).
+3. **Arrest or Detention:** Inquiring about bail eligibility, production before Magistrate within 24 hours, or the D.K. Basu arrest guidelines.
+4. **Harassment or Corruption:** Filing a grievance with the State Police Complaints Authority (SPCA) or Vigilance Department.
+
+💡 **Please describe your situation in a few sentences, and I will guide you through the exact legal steps.**`,
+      };
+    }
+
+    // 3. Cyber / Fraud
+    if (tokens.some((t) => ['cyber', 'fraud', 'scam', 'upi', 'hacked', 'bank'].includes(t))) {
+      return {
+        category: 'cyber',
+        categoryTitle: 'Cyber Crime & Digital Safety',
+        summary: 'Cyber fraud guidance: 1930 Golden Hour freeze, cybercrime.gov.in complaint, and RBI Zero Liability rules.',
+        keyRights: [
+          'Zero Liability for Unauthorized Electronic Banking Transactions (RBI Circular)',
+          'Immediate transaction freezing under National Cyber Financial Fraud Reporting System',
+        ],
+        applicableLaws: ['Information Technology Act, 2000 (Section 66D)', 'RBI Customer Protection Circular (2017)'],
+        recommendedActions: [
+          'Dial 1930 immediately if the fraud happened within the last 2-3 hours.',
+          'Notify your bank in writing within 72 hours for zero liability protection.',
+        ],
+        helplines: ['National Cyber Financial Fraud Helpline: 1930', 'Portal: cybercrime.gov.in', 'RBI Ombudsman: cms.rbi.org.in'],
+        sourceRef: 'Information Technology Act, 2000',
+        fullAnswer: `### 💻 Cyber & Financial Fraud Advisory: Immediate Action
+
+If you have been targeted by online fraud or unauthorized bank deductions, act swiftly:
+
+🚨 **Critical First Steps:**
+1. **Golden Hour (First 2–3 Hours):** Immediately dial **1930** (National Cyber Financial Fraud Helpline) or report at **cybercrime.gov.in** with your transaction UTR / bank reference number to freeze funds in transit.
+2. **Notify Bank within 72 Hours:** Under **RBI Customer Protection Guidelines**, reporting unauthorized transactions within 3 days ensures **Zero Customer Liability**; the bank must restore funds.
+3. **Common Scams:** If you are dealing with fake loan app blackmail, APK malware, or morphed photos, do not pay ransom—preserve screenshots and lodge a complaint under Cyber Blackmailing.
+
+💡 **Please describe what happened (e.g., amount debited, method used, platform), and I will provide the specific recovery protocol.**`,
+      };
+    }
+
+    // 4. Labor / Salary
+    if (tokens.some((t) => ['salary', 'wage', 'job', 'boss', 'fired', 'pf', 'gratuity'].includes(t))) {
+      return {
+        category: 'labor',
+        categoryTitle: 'Labor & Employment Rights',
+        summary: 'Workplace guidance: Recovery of unpaid salary, gratuity, PF, and protection against wrongful termination.',
+        keyRights: [
+          'Right to Timely Wages under Code on Wages, 2019',
+          'Right to Relieving Letter and Gratuity under Payment of Gratuity Act, 1972',
+        ],
+        applicableLaws: ['Code on Wages, 2019', 'Industrial Disputes Act, 1947', 'Payment of Gratuity Act, 1972'],
+        recommendedActions: ['Provide details of your designation, tenure, and pending dues.'],
+        helplines: ['Shram Suvidha Portal: shramsuvidha.gov.in', 'EPFO Toll-Free: 1800 118 005'],
+        sourceRef: 'Code on Wages, 2019',
+        fullAnswer: `### 💼 Labor & Workplace Rights Advisory: Clarification
+
+Are you experiencing an employment issue? Please let me know which matter applies to you:
+
+1. **Unpaid Salary / Withheld Dues:** Employer has not paid salary or final Full & Final (F&F) settlement (*unlawful under Code on Wages, 2019*).
+2. **Withheld Documents:** HR refusing to issue Relieving Letter or Experience Certificate upon resignation.
+3. **Wrongful Termination:** Terminated without 30 days notice or retrenchment compensation (*violates Section 25F of Industrial Disputes Act*).
+4. **PF / Gratuity Non-Deposit:** Employer deducted Provident Fund but did not deposit with EPFO, or denied gratuity after 5 years service.
+
+💡 **Tell me a little more about your employment and the dispute, and I will cite the exact statutory remedies.**`,
+      };
+    }
+  }
+
+  // =========================================================================
+  // INTENT 6: REAL LEGAL ANALYSIS ENGINE
+  // =========================================================================
+
   // Category vocabulary weights
   const categoryKeywords = {
-    consumer: ['mrp', 'refund', 'defective', 'consumer', 'seller', 'flipkart', 'amazon', 'warranty', 'guarantee', 'shopkeeper', 'service charge', 'expiry', 'counterfeit', 'adulterated', 'edaakhil', 'ncdrc', 'unfair trade', 'replacement', 'product liability', 'overcharging', 'flight refund', 'hotel refund'],
-    labor: ['salary', 'wage', 'wages', 'boss', 'pf', 'provident fund', 'gratuity', 'overtime', 'terminated', 'termination', 'fired', 'notice period', 'retrenchment', 'labour', 'labor', 'unpaid', 'withheld', 'experience letter', 'relieving letter', 'bonus', 'workplace', 'layoff', 'severance', 'employee', 'employer'],
-    property: ['property', 'land', 'flat', 'apartment', 'builder', 'rera', 'ancestral', 'possession', 'tenant', 'landlord', 'rent', 'deposit', 'eviction', 'inheritance', 'deed', 'patta', 'khata', 'registry', 'encumbrance', 'delay in possession', 'encroachment', 'will', 'gift deed'],
-    family: ['divorce', 'husband', 'wife', 'marriage', 'custody', 'child custody', 'alimony', 'maintenance', 'stridhan', 'domestic violence', 'in-laws', 'cruelty', '498a', 'special marriage act', 'hindu marriage', 'restitution', 'visitation rights', 'desertion'],
-    criminal: ['fir', 'zero fir', 'police', 'arrest', 'bail', 'anticipatory bail', 'jail', 'theft', 'assault', 'beating', 'threat', 'intimidation', 'bribe', 'corruption', 'complaint', 'warrant', 'cognizable', 'bns', 'bnss', 'ipc', 'crpc', 'panchnama', 'seizure', 'traffic stop', 'challan'],
-    constitutional: ['rti', 'right to information', 'fundamental right', 'constitution', 'writ', 'habeas corpus', 'mandamus', 'article 21', 'article 14', 'article 19', 'freedom of speech', 'privacy', 'tender', 'public fund', 'pio', 'information commission', 'fundamental duties'],
-    women: ['harassment', 'posh', 'sexual harassment', 'workplace harassment', 'maternity', 'maternity leave', 'dowry', 'women', 'female', 'girl', 'stalking', 'eve teasing', 'night arrest', 'internal committee', 'section 498a', 'protection officer'],
-    cyber: ['cyber', 'fraud', 'scam', 'otp', 'upi', 'hacked', 'fake', 'blackmail', 'online money', 'phishing', 'bank fraud', 'mule account', '1930', 'cybercrime.gov.in', 'deepfake', 'loan app', 'sextortion', 'morphed', 'data privacy', 'identity theft', 'credit card fraud']
+    consumer: [
+      'mrp', 'refund', 'defective', 'consumer', 'seller', 'flipkart', 'amazon',
+      'warranty', 'guarantee', 'shopkeeper', 'service charge', 'expiry',
+      'counterfeit', 'adulterated', 'edaakhil', 'ncdrc', 'unfair trade',
+      'replacement', 'product liability', 'overcharging', 'flight refund',
+      'hotel refund', 'ecommerce', 'delivered wrong', 'broken product',
+      'order cancelled', 'return rejected', 'zomato', 'swiggy'
+    ],
+    labor: [
+      'salary', 'wage', 'wages', 'boss', 'pf', 'provident fund', 'gratuity',
+      'overtime', 'terminated', 'termination', 'fired', 'notice period',
+      'retrenchment', 'labour', 'labor', 'unpaid', 'withheld',
+      'experience letter', 'relieving letter', 'bonus', 'workplace', 'layoff',
+      'severance', 'employee', 'employer', 'resignation', 'hr refused',
+      'working hours', 'full and final', 'fnf', 'contract labor'
+    ],
+    property: [
+      'property', 'land', 'flat', 'apartment', 'builder', 'rera', 'ancestral',
+      'possession', 'tenant', 'landlord', 'rent', 'deposit', 'eviction',
+      'inheritance', 'deed', 'patta', 'khata', 'registry', 'encumbrance',
+      'delay in possession', 'encroachment', 'will', 'gift deed', 'locked out',
+      'cut electricity', 'water connection', 'agreement', 'security deposit',
+      'coparcenary', 'mutation', 'sub registrar'
+    ],
+    family: [
+      'divorce', 'husband', 'wife', 'marriage', 'custody', 'child custody',
+      'alimony', 'maintenance', 'stridhan', 'domestic violence', 'in-laws',
+      'cruelty', '498a', 'special marriage act', 'hindu marriage', 'restitution',
+      'visitation rights', 'desertion', 'dowry', 'mutual consent'
+    ],
+    criminal: [
+      'fir', 'zero fir', 'police', 'arrest', 'bail', 'anticipatory bail', 'jail',
+      'theft', 'assault', 'beating', 'threat', 'intimidation', 'bribe',
+      'corruption', 'complaint', 'warrant', 'cognizable', 'bns', 'bnss', 'ipc',
+      'crpc', 'panchnama', 'seizure', 'traffic stop', 'challan', 'check phone',
+      'search phone', 'handcuff', 'third degree', 'sho refused', 'lockup'
+    ],
+    constitutional: [
+      'rti', 'right to information', 'fundamental right', 'constitution', 'writ',
+      'habeas corpus', 'mandamus', 'article 21', 'article 14', 'article 19',
+      'freedom of speech', 'privacy', 'tender', 'public fund', 'pio',
+      'information commission', 'fundamental duties', 'equality', 'discrimination',
+      'public authority', 'first appeal'
+    ],
+    women: [
+      'harassment', 'posh', 'sexual harassment', 'workplace harassment',
+      'maternity', 'maternity leave', 'dowry', 'women', 'female', 'girl',
+      'stalking', 'eve teasing', 'night arrest', 'internal committee',
+      'section 498a', 'protection officer', 'sakhi', 'shebox', 'pregnant'
+    ],
+    cyber: [
+      'cyber', 'fraud', 'scam', 'otp', 'upi', 'hacked', 'fake', 'blackmail',
+      'online money', 'phishing', 'bank fraud', 'mule account', '1930',
+      'cybercrime.gov.in', 'deepfake', 'loan app', 'sextortion', 'morphed',
+      'data privacy', 'identity theft', 'credit card fraud', 'crypto scam',
+      'sim swap', 'stolen account', 'unauthorized transaction'
+    ],
   };
 
   // 1. Calculate domain relevance scores across all 8 domains
@@ -610,18 +1016,61 @@ export function queryKnowledgeBase(queryText, requestedCategory = null) {
     const keywords = categoryKeywords[cat] || [];
     keywords.forEach((kw) => {
       if (query.includes(kw)) {
-        score += kw.length > 5 ? 3 : 2;
+        score += kw.length > 5 ? 4 : 2;
       }
     });
     if (requestedCategory && requestedCategory.toLowerCase() === cat) {
-      score += 5;
+      score += 10;
     }
     domainScores[cat] = score;
   });
 
   // Sort categories by relevance
   const sortedCategories = Object.keys(domainScores).sort((a, b) => domainScores[b] - domainScores[a]);
-  const primaryCat = domainScores[sortedCategories[0]] > 0 ? sortedCategories[0] : (requestedCategory || 'consumer');
+  const highestScore = domainScores[sortedCategories[0]];
+
+  // If NO domain keywords matched at all and no category was requested:
+  if (highestScore === 0 && !requestedCategory) {
+    const fullAnswer = `### ⚖️ NyayaSetu Citizen Legal Inquiry
+
+I analyzed your query: *"${rawQuery}"*.
+
+To provide you with the exact Indian statutory provisions, section numbers, and concrete dispute redressal remedies, could you please specify what type of citizen issue or legal dispute you are dealing with?
+
+---
+
+#### Common Legal Matters I Can Assist With:
+* 🛒 **Consumer & E-Commerce:** Defective products, delayed refunds, misleading advertising, or overcharging above MRP (*Consumer Protection Act, 2019*).
+* 💼 **Workplace & Employment:** Unpaid wages, wrongful dismissal, withheld PF, gratuity, or relieving documents (*Code on Wages, 2019*).
+* 🏠 **Tenancy & Real Estate:** Landlord lockouts, utility disconnections, security deposit disputes, or RERA builder delays.
+* 💻 **Cyber Crime & Digital Banking:** Unauthorized UPI debits, bank fraud, online loan app harassment, or identity theft.
+* 🚓 **Police & Criminal Law:** Refusal to register an FIR, Zero FIR rights, rights upon arrest, or bail assistance (*BNSS 2023*).
+* 📜 **RTI & Citizen Inquiries:** Inspecting government works, municipal tender files, or seeking certified public records (*RTI Act, 2005*).
+
+Please reply with a brief description of what happened, and I will cite the exact applicable Indian laws, your enforceable rights, and remedies!`;
+
+    return {
+      category: 'general',
+      categoryTitle: 'NyayaSetu Citizen Legal Companion',
+      summary: 'Please provide more details about your legal dispute so NyayaSetu can cite the exact Indian statutes and remedies.',
+      keyRights: ['Right to Legal Awareness and Equal Justice (Article 39A)'],
+      applicableLaws: ['Constitution of India (Article 39A)'],
+      recommendedActions: [
+        'Clarify the specific subject (Consumer, Labor, Tenancy, Cyber, Police, RTI).',
+        'State any important facts like dates, monetary loss, or party involved.',
+      ],
+      helplines: [
+        'National Legal Services Authority (NALSA): 15100',
+        'National Emergency Helpline: 112',
+        'National Consumer Helpline: 1915',
+        'National Cyber Crime Helpline: 1930',
+      ],
+      sourceRef: 'Constitution of India (Article 39A)',
+      fullAnswer,
+    };
+  }
+
+  const primaryCat = highestScore > 0 ? sortedCategories[0] : (requestedCategory || 'consumer');
   const primaryDomain = legalKnowledgeBase[primaryCat];
 
   // 2. Score individual rights across the primary domain and secondary domains
@@ -637,7 +1086,7 @@ export function queryKnowledgeBase(queryText, requestedCategory = null) {
       const haystack = `${right.title} ${right.summary} ${right.applicableLaw} ${(right.actionSteps || []).join(' ')} ${(right.details || []).join(' ')}`.toLowerCase();
 
       queryTokens.forEach((token) => {
-        if (haystack.includes(token)) rScore += 2;
+        if (haystack.includes(token)) rScore += 3;
       });
 
       // Bonus for exact category match
@@ -657,23 +1106,26 @@ export function queryKnowledgeBase(queryText, requestedCategory = null) {
   if (bestRight.applicableLaw) lawsSet.add(bestRight.applicableLaw);
   if (secondaryRight && secondaryRight.applicableLaw) lawsSet.add(secondaryRight.applicableLaw);
 
-  // Special statutory overrides based on explicit query contexts
-  if (query.includes('police') || query.includes('arrest') || query.includes('phone')) {
+  // Special statutory citations based on explicit query contexts
+  if (query.includes('police') || query.includes('arrest') || query.includes('phone') || query.includes('stop')) {
     lawsSet.add('Section 173 & Section 105, Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023');
-    lawsSet.add('Article 21, Constitution of India (Right to Privacy & Personal Liberty)');
+    lawsSet.add('Article 20(3) & Article 21, Constitution of India (Protection Against Self-Incrimination & Privacy)');
   }
   if (query.includes('upi') || query.includes('cyber') || query.includes('fraud') || query.includes('bank')) {
     lawsSet.add('Section 66D, Information Technology Act, 2000 (Cheating by Impersonation)');
-    lawsSet.add('RBI Customer Protection Circular: Zero Liability for Unauthorized Electronic Transactions');
+    lawsSet.add('RBI Customer Protection Circular (2017): Zero Liability for Unauthorized Electronic Transactions');
   }
-  if (query.includes('salary') || query.includes('fired') || query.includes('terminate')) {
+  if (query.includes('salary') || query.includes('fired') || query.includes('terminate') || query.includes('wages')) {
     lawsSet.add('Section 25F, Industrial Disputes Act, 1947 & Code on Wages, 2019');
+    lawsSet.add('Payment of Wages Act, 1936 (Mandatory timely disbursement)');
   }
-  if (query.includes('landlord') || query.includes('rent') || query.includes('evict')) {
+  if (query.includes('landlord') || query.includes('rent') || query.includes('evict') || query.includes('locked')) {
     lawsSet.add('Model Tenancy Act, 2021 & Section 108, Transfer of Property Act, 1882');
+    lawsSet.add('Section 6, Specific Relief Act, 1963 (Restoration of Unlawful Dispossession)');
   }
-  if (query.includes('consumer') || query.includes('defective') || query.includes('refund')) {
+  if (query.includes('consumer') || query.includes('defective') || query.includes('refund') || query.includes('mrp')) {
     lawsSet.add('Consumer Protection Act, 2019 (Section 2(47) Unfair Trade Practice & Section 35)');
+    lawsSet.add('Legal Metrology Act, 2009 (Prohibition on charging above MRP)');
   }
 
   const applicableLaws = Array.from(lawsSet).filter(Boolean);
@@ -691,26 +1143,37 @@ export function queryKnowledgeBase(queryText, requestedCategory = null) {
     );
   }
 
-  // 5. Structure a comprehensive, professional citizen legal advisory
-  const fullAnswer = `### ⚖️ Statutory Legal Analysis: ${primaryDomain.category}
+  // 5. Dynamic executive summary tailored to the specific dispute
+  let executiveSummary = bestRight.summary;
+  if (query.includes('landlord') && (query.includes('lock') || query.includes('evict') || query.includes('out'))) {
+    executiveSummary = 'Under Indian law, a landlord cannot forcefully dispossess a tenant, lock them out, or disconnect basic utilities (water/power) without due process of law and a valid judicial eviction decree under the Model Tenancy Act.';
+  } else if (query.includes('salary') && (query.includes('not pay') || query.includes('withheld') || query.includes('refuse'))) {
+    executiveSummary = 'Under the Code on Wages, 2019 and Payment of Wages Act, 1936, an employer is legally obligated to disburse all earned wages and cannot arbitrarily withhold salary, bonus, or mandatory relieving documents upon resignation.';
+  } else if ((query.includes('upi') || query.includes('fraud') || query.includes('cyber')) && query.includes('money')) {
+    executiveSummary = 'Under Section 66D of the IT Act and RBI Circulars on Customer Protection, reporting unauthorized electronic debits within 3 days grants you zero customer liability, and calling 1930 within the Golden Hour freezes the funds trail.';
+  } else if (query.includes('police') && (query.includes('phone') || query.includes('search'))) {
+    executiveSummary = 'Under the landmark Supreme Court ruling in D.K. Basu and Section 105 of BNSS 2023, police officers cannot arbitrarily seize or browse a citizen’s private smartphone during a routine stop without a valid search warrant or nexus to a cognizable crime.';
+  }
 
-**Core Issue Addressed:** "${rawQuery}"
+  // 6. Structure a comprehensive, natural citizen legal advisory
+  const fullAnswer = `### ⚖️ Legal Advisory: ${primaryDomain.category}
+
+${executiveSummary}
 
 ---
 
-#### 1. Applicable Laws & Statutory Provisions
+#### 1. Applicable Indian Laws & Statutory Provisions
 ${applicableLaws.map((law) => `* **${law}**`).join('\n')}
 
-#### 2. Your Enforceable Rights Under Indian Law
-* **Primary Right:** **${bestRight.title}**
-* **Statutory Ground:** ${bestRight.summary}
-${secondaryRight ? `* **Related Protection:** **${secondaryRight.title}** — ${secondaryRight.summary}` : ''}
+#### 2. Your Enforceable Citizen Rights
+* **${bestRight.title}:** ${bestRight.summary}
+${secondaryRight ? `* **${secondaryRight.title}:** ${secondaryRight.summary}` : ''}
 * **Constitutional Guarantee:** Under **Article 39A of the Constitution of India**, every citizen has the fundamental right to equal justice and free legal aid. No individual can be deprived of legal remedies due to economic or procedural barriers.
 
-#### 3. Step-by-Step Action Plan & Remedies
+#### 3. Step-by-Step Legal Remedies & Action Plan
 ${actions.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
 
-#### 4. Official Dispute Redressal Portals & Helplines
+#### 4. Official Dispute Redressal Helplines & Portals
 ${primaryDomain.helplines.map((h) => `* 📞 **${h}**`).join('\n')}
 
 ---
@@ -719,7 +1182,7 @@ ${primaryDomain.helplines.map((h) => `* 📞 **${h}**`).join('\n')}
   return {
     category: primaryCat,
     categoryTitle: primaryDomain.category,
-    summary: `${bestRight.title}: ${bestRight.summary}`,
+    summary: `${bestRight.title}: ${executiveSummary}`,
     keyRights: primaryDomain.rights.map((r) => `${r.title}: ${r.summary}`),
     applicableLaws,
     recommendedActions: actions,

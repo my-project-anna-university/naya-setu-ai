@@ -14,8 +14,8 @@ const router = express.Router();
 const queryValidation = [
   body().custom((value, { req }) => {
     const q = req.body?.question || req.body?.query || req.body?.text || req.body?.message;
-    if (!q || typeof q !== 'string' || q.trim().length < 3) {
-      throw new Error('Please provide a legal question or query (minimum 3 characters).');
+    if (!q || typeof q !== 'string' || q.trim().length < 1) {
+      throw new Error('Please provide a legal question or query.');
     }
     req.body.question = q.trim();
     return true;
