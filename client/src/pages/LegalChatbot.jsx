@@ -16,7 +16,7 @@ import {
 } from 'react-icons/fa';
 import Badge from '../components/common/Badge';
 import toast from 'react-hot-toast';
-import { AI_SUGGESTED_QUESTIONS } from '../data/mockData';
+import { AI_SUGGESTED_QUESTIONS, RIGHTS_CATEGORIES_DATA } from '../data/mockData';
 
 export const LegalChatbot = () => {
   const [searchParams] = useSearchParams();
@@ -79,53 +79,52 @@ export const LegalChatbot = () => {
 
   const getKnowledgeResponse = (query, cat) => {
     const qLower = query.toLowerCase();
+    const tokens = qLower.split(/[^a-zA-Z0-9]+/).filter((t) => t.length > 2);
 
-    if (qLower.includes('phone') && (qLower.includes('police') || qLower.includes('check') || qLower.includes('search'))) {
-      return {
-        text: `Under Indian law and the guidelines affirmed by the Supreme Court, police officers **cannot arbitrarily seize or inspect your personal mobile phone** during traffic stops or routine questioning.\n\n### Key Protections:\n1. **Article 21 Right to Privacy:** Your digital device holds confidential personal data, chats, and medical records protected under fundamental rights (K.S. Puttaswamy judgment).\n2. **Statutory Search Requisition:** Under Section 105 of the Bharatiya Nagarik Suraksha Sanhita (BNSS) (formerly Section 100/102 CrPC), any device search requires an investigation order or a clear seizure memo (Panchnama) signed by independent witnesses.\n3. **What You Can Do:** Politely ask the officer: *"Under which registered FIR or written order are you requesting my device?"* You are not legally obligated to share your biometric unlock or screen password unless ordered by a competent magistrate.`,
-        citations: ['Article 21, Constitution of India', 'Section 105 BNSS 2023', 'K.S. Puttaswamy (2017) 10 SCC 1']
-      };
-    }
+    let bestCategory = RIGHTS_CATEGORIES_DATA[0];
+    let bestSection = bestCategory.sections[0];
+    let highestScore = -1;
 
-    if (qLower.includes('fir') || qLower.includes('zero fir') || qLower.includes('police complaint')) {
-      return {
-        text: `Under **Section 173 of the Bharatiya Nagarik Suraksha Sanhita, 2023 (BNSS)** (formerly Section 154 CrPC), police are legally bound to register an FIR for any cognizable offense.\n\n### Essential Rights:\n- **Zero FIR:** You can file a Zero FIR at ANY police station in India, irrespective of jurisdiction where the incident occurred. The police station is mandated to register it and transfer it to the concerned police station.\n- **Free Copy:** You have the statutory right to receive a certified copy of the FIR **free of charge** immediately.\n- **Refusal is a Crime:** If a police officer refuses to lodge an FIR for cognizable crimes (theft, assault, harassment), they can be prosecuted under **Section 199 BNS** (Section 166A IPC) carrying up to 2 years imprisonment.\n- **Remedy:** If the local police station refuses, send the written complaint via registered post to the Superintendent of Police (SP / DCP) under Section 173(4) BNSS.`,
-        citations: ['Section 173, Bharatiya Nagarik Suraksha Sanhita 2023', 'Lalita Kumari v. Govt of UP (2014) 2 SCC 1', 'Section 199 BNS']
-      };
-    }
+    RIGHTS_CATEGORIES_DATA.forEach((category) => {
+      category.sections.forEach((sec) => {
+        let score = 0;
+        const corpus = `${category.name} ${category.lawsGoverning.join(' ')} ${sec.title} ${sec.content} ${sec.penalty || ''}`.toLowerCase();
 
-    if (qLower.includes('landlord') || qLower.includes('rent') || qLower.includes('deposit') || qLower.includes('tenant')) {
-      return {
-        text: `Under Indian Tenancy Laws and the **Model Tenancy Act**:\n\n1. **Unlawful Eviction:** A landlord cannot physically lock you out, throw your belongings, or cut essential utility supplies (electricity, water). Such actions are illegal without a formal eviction order from the Rent Authority or Civil Court.\n2. **Security Deposit Deductions:** The landlord cannot arbitrarily forfeit security deposits. Normal wear and tear cannot be deducted. Any deduction for damages requires itemized repair invoices.\n3. **Notice Period:** Landlords must typically serve a minimum 30-day prior written notice before seeking vacation of the premises or rent revision.\n4. **Remedy:** You can file an injunction petition before the Rent Control Court or send a formal Legal Notice demanding refund of deposit within 15 days.`,
-        citations: ['Model Tenancy Act 2021', 'State Rent Control Acts', 'Section 108 Transfer of Property Act 1882']
-      };
-    }
+        tokens.forEach((tok) => {
+          if (corpus.includes(tok)) score += tok.length > 4 ? 3 : 2;
+        });
 
-    if (qLower.includes('salary') || qLower.includes('employer') || qLower.includes('firing') || qLower.includes('unpaid') || qLower.includes('resignation')) {
-      return {
-        text: `Under the **Code on Wages, 2019** and the **Payment of Wages Act**:\n\n- **Timely Payment:** Employers must disburse wages by the 7th or 10th of every month. Withholding earned wages without statutory sanction is illegal.\n- **Experience & Relieving Letter:** An employer has no legal right to withhold your relieving letter, experience certificate, or PF dues once the agreed notice period or salary in lieu is fulfilled.\n- **Termination Notice:** Sudden termination without notice pay or inquiry violates Section 25F of the Industrial Disputes Act.\n- **Actionable Steps:**\n  1. Send a formal demand email with chronology of dues.\n  2. Issue a statutory Legal Notice giving 15 days compliance.\n  3. Lodge a formal complaint before the Assistant Labor Commissioner (ALC).`,
-        citations: ['Code on Wages 2019', 'Industrial Disputes Act 1947', 'Payment of Gratuity Act 1972']
-      };
-    }
+        if (qLower.includes('salary') && category.id.includes('labor')) score += 10;
+        if (qLower.includes('police') && category.id.includes('criminal')) score += 10;
+        if (qLower.includes('phone') && (corpus.includes('privacy') || category.id.includes('criminal'))) score += 10;
+        if (qLower.includes('landlord') && (corpus.includes('tenant') || corpus.includes('rent') || category.id.includes('property'))) score += 10;
+        if (qLower.includes('cyber') || qLower.includes('upi') || qLower.includes('scam') || qLower.includes('otp')) {
+          if (category.id.includes('cyber') || corpus.includes('cyber')) score += 12;
+        }
+        if (qLower.includes('fir') && corpus.includes('fir')) score += 12;
 
-    if (qLower.includes('cyber') || qLower.includes('upi') || qLower.includes('fraud') || qLower.includes('scam') || qLower.includes('phishing')) {
-      return {
-        text: `If you have lost money to a digital fraud (UPI, credit card, net banking), take immediate action within the **"Golden Hour"** (first 2-3 hours):\n\n### Immediate Steps:\n1. **Call 1930:** The National Cyber Crime Reporting Helpline connects immediately to bank grievance nodal officers to freeze transactions before money leaves mule accounts.\n2. **File at cybercrime.gov.in:** Lodge a formal cyber complaint and note the acknowledgement number.\n3. **Bank Zero Liability:** Under RBI Circular (DBR.No.Leg.BC.78/09.07.005/2017-18), if you notify your bank within 3 working days of an unauthorized transaction with zero customer negligence, you are entitled to **100% full reversal within 10 days**.\n4. **Block Accounts:** Instantly block your SIM/cards via your bank mobile app.`,
-        citations: ['Information Technology Act 2000 (Section 66D)', 'RBI Customer Protection Circular 2017', 'National Cyber Crime Portal (cybercrime.gov.in)']
-      };
-    }
+        if (score > highestScore) {
+          highestScore = score;
+          bestCategory = category;
+          bestSection = sec;
+        }
+      });
+    });
 
-    if (qLower.includes('rti') || qLower.includes('right to information')) {
-      return {
-        text: `Under the **Right to Information (RTI) Act, 2005**, any citizen of India can seek documents and public records from government departments.\n\n### Step-by-Step Guide:\n- **Fee:** Nominal fee of ₹10 (Exempt for Below Poverty Line BPL card holders).\n- **Timeline:** The Public Information Officer (PIO) must furnish information within **30 days** (within **48 hours** if information concerns life or personal liberty).\n- **How to File:**\n  - For Central Ministries: Visit **rtionline.gov.in**\n  - For State Bodies: Physical application or State RTI portals.\n- **Penalty on Officers:** If PIO refuses or delays without reasonable cause, the Information Commission can penalize the officer ₹250/day up to ₹25,000.`,
-        citations: ['Section 6(1) & Section 7(1), RTI Act 2005', 'Central Information Commission Guidelines']
-      };
-    }
+    const applicableLaws = bestCategory.lawsGoverning || [];
+    const text = `### ⚖️ Statutory Legal Analysis: ${bestCategory.name}\n\n` +
+      `**Core Right:** **${bestSection.title}**\n\n` +
+      `**Statutory Provision:** ${bestSection.content}\n\n` +
+      (bestSection.penalty ? `**Legal Penalty on Violator:** ${bestSection.penalty}\n\n` : '') +
+      `### Recommended Action Steps:\n` +
+      `1. **Gather Evidence:** Maintain written communication, invoices, timestamps, emails, and transaction receipts.\n` +
+      `2. **Statutory Demand Notice:** Issue a formal 15-day legal notice giving the opposite party opportunity to rectify.\n` +
+      `3. **Approaching Legal Forum:** If unrectified, approach the competent authority or your local District Legal Services Authority (DLSA) under Article 39A.\n\n` +
+      `💡 *You can generate an official document or notice in 1-click in the **Document Generator**.*`;
 
-    // Default intelligent Indian legal advisory response
     return {
-      text: `Thank you for your question regarding **${query}**.\n\n### Applicable Legal Framework:\nUnder Indian jurisprudence, disputes of this nature are addressed by relevant statutory provisions. If this relates to consumer deficiency, you can approach the District Consumer Forum under the Consumer Protection Act 2019. If it pertains to criminal offenses or illegal intimidation, remedies exist under the Bharatiya Nyaya Sanhita (BNS) and Section 173 BNSS for police complaints.\n\n### Recommended Actions:\n1. **Gather Evidence:** Maintain written communication, invoices, timestamps, and payment receipts.\n2. **Send a Written Demand:** Issue a formal 15-day notice specifying your grievance and relief sought.\n3. **Access Free Legal Aid:** If you need an advocate to represent you, you can access free counsel via your nearest District Legal Services Authority (DLSA) under Article 39A.\n\nWould you like me to draft a specific Legal Notice or RTI application for this matter?`,
-      citations: ['Constitution of India (Article 39A)', 'Bharatiya Nagarik Suraksha Sanhita (BNSS 2023)']
+      text,
+      citations: applicableLaws
     };
   };
 
