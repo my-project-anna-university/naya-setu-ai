@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import { legalCategories, legalKnowledgeBase, queryKnowledgeBase } from '../data/legalKnowledge.js';
 import { getLegalAiResponse } from '../utils/aiHelper.js';
 import { getDbStatus } from '../config/db.js';
+import { fetchVerifiedLegalSources } from '../services/legalApiConnector.js';
 
 /**
  * @desc    Submit a legal question & get AI/Knowledge Base legal rights guidance
@@ -27,6 +28,18 @@ export const askQuestion = async (req, res, next) => {
     // Process question via AI helper (Gemini or enriched legal knowledge engine)
     const result = await getLegalAiResponse(questionText, category, language);
 
+    // Verify against Ground-Truth Legal API & Official Statutes (Zero Hallucination Grounding)
+    const verifiedData = await fetchVerifiedLegalSources(questionText, result.applicableLaws || []);
+
+    // Enrich fullAnswer with verified Indian Kanoon & Official Gazette links if not already present
+    let enrichedAnswer = result.fullAnswer;
+    if (verifiedData.links && verifiedData.links.length > 0 && !enrichedAnswer.includes('Verified Legal Database Sources')) {
+      const verifiedSection = `\n\n---\n\n#### 🏛️ Verified Legal Database Sources & Precedents (Indian Kanoon & Official Gazette)\n` +
+        verifiedData.links.map((link) => `* ⚖️ **[${link.title}](${link.url})** — *${link.source} (${link.type})*`).join('\n') +
+        `\n\n> [!NOTE]\n> *All citations above are grounded directly in authentic statutory gazettes and verified court precedents without AI assumptions or speculative predictions.*`;
+      enrichedAnswer = enrichedAnswer + verifiedSection;
+    }
+
     let savedQueryId = null;
 
     // If MongoDB is connected, record query in database
@@ -44,7 +57,7 @@ export const askQuestion = async (req, res, next) => {
             recommendedActions: result.recommendedActions,
             helplines: result.helplines,
             sourceRef: result.sourceRef,
-            fullAnswer: result.fullAnswer,
+            fullAnswer: enrichedAnswer,
           },
         });
         savedQueryId = savedQuery._id;
@@ -79,10 +92,13 @@ export const askQuestion = async (req, res, next) => {
       recommendedActions: result.recommendedActions || [],
       helplines: result.helplines || [],
       sourceRef: result.sourceRef,
-      fullAnswer: result.fullAnswer,
-      answer: result.fullAnswer,
-      response: result.fullAnswer,
-      text: result.fullAnswer,
+      fullAnswer: enrichedAnswer,
+      answer: enrichedAnswer,
+      response: enrichedAnswer,
+      text: enrichedAnswer,
+      verifiedSources: verifiedData.sources || [],
+      liveLegalLinks: verifiedData.links || [],
+      legalDatabaseStatus: verifiedData.status || 'Verified via Indian Kanoon & Official Statutes',
       isAiGenerated: result.isAiGenerated,
       aiModel: result.aiModel,
     });

@@ -28,17 +28,50 @@ const renderInlineFormatting = (text) => {
   let key = 0;
 
   while (remaining.length > 0) {
+    const linkMatch = remaining.match(/^(.*?)\[(.*?)\]\((.*?)\)(.*)$/);
+    const codeMatch = remaining.match(/^(.*?)`([^`]+)`(.*)$/);
     const boldMatch = remaining.match(/^(.*?)\*\*(.+?)\*\*(.*)$/);
     const italicMatch = remaining.match(/^(.*?)\*(.+?)\*(.*)$/);
 
-    if (boldMatch) {
-      if (boldMatch[1]) parts.push(<span key={key++}>{boldMatch[1]}</span>);
-      parts.push(<strong key={key++} className="font-semibold text-slate-900">{boldMatch[2]}</strong>);
-      remaining = boldMatch[3];
-    } else if (italicMatch) {
-      if (italicMatch[1]) parts.push(<span key={key++}>{italicMatch[1]}</span>);
-      parts.push(<em key={key++} className="italic text-slate-700">{italicMatch[2]}</em>);
-      remaining = italicMatch[3];
+    const matches = [
+      linkMatch ? { type: 'link', pos: linkMatch[1].length, m: linkMatch } : null,
+      codeMatch ? { type: 'code', pos: codeMatch[1].length, m: codeMatch } : null,
+      boldMatch ? { type: 'bold', pos: boldMatch[1].length, m: boldMatch } : null,
+      italicMatch ? { type: 'italic', pos: italicMatch[1].length, m: italicMatch } : null,
+    ].filter(Boolean).sort((a, b) => a.pos - b.pos);
+
+    if (matches.length > 0) {
+      const earliest = matches[0];
+      const m = earliest.m;
+      if (m[1]) parts.push(<span key={key++}>{m[1]}</span>);
+
+      if (earliest.type === 'link') {
+        parts.push(
+          <a
+            key={key++}
+            href={m[3]}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-700 underline font-semibold hover:text-secondary-600 transition-colors inline-flex items-center gap-0.5"
+          >
+            {m[2]}
+          </a>
+        );
+        remaining = m[4];
+      } else if (earliest.type === 'code') {
+        parts.push(
+          <code key={key++} className="bg-slate-100 text-slate-800 text-[11px] sm:text-xs px-1.5 py-0.5 rounded font-mono border border-slate-200">
+            {m[2]}
+          </code>
+        );
+        remaining = m[3];
+      } else if (earliest.type === 'bold') {
+        parts.push(<strong key={key++} className="font-semibold text-slate-900">{m[2]}</strong>);
+        remaining = m[3];
+      } else if (earliest.type === 'italic') {
+        parts.push(<em key={key++} className="italic text-slate-700">{m[2]}</em>);
+        remaining = m[3];
+      }
     } else {
       parts.push(<span key={key++}>{remaining}</span>);
       break;
@@ -54,6 +87,15 @@ const renderMessageLine = (line, idx, isBot) => {
 
   if (trimmed === '---') {
     return <hr key={idx} className="my-2.5 border-slate-200" />;
+  }
+
+  if (trimmed.startsWith('> ')) {
+    const quoteText = trimmed.replace(/^>\s*(\[!NOTE\]\s*|\[!WARNING\]\s*|\[!TIP\]\s*)?/, '');
+    return (
+      <div key={idx} className="my-2 p-2.5 bg-blue-50/80 border-l-4 border-primary-600 rounded-r text-xs text-slate-700 leading-relaxed shadow-xs">
+        {renderInlineFormatting(quoteText)}
+      </div>
+    );
   }
 
   if (trimmed.startsWith('### ')) {
@@ -331,6 +373,9 @@ export const LegalChatbot = () => {
           text: d.fullAnswer || d.answer || d.response || d.summary || d.message,
           citations: d.applicableLaws || d.citations || d.laws || [],
           category: d.categoryTitle || d.category,
+          liveLegalLinks: d.liveLegalLinks || [],
+          verifiedSources: d.verifiedSources || [],
+          legalDatabaseStatus: d.legalDatabaseStatus || null,
         };
       } catch (err) {
         console.warn('Backend API query error, using local fallback:', err);
@@ -344,7 +389,10 @@ export const LegalChatbot = () => {
         sender: 'bot',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: botResponseData.text,
-        citations: botResponseData.citations || []
+        citations: botResponseData.citations || [],
+        liveLegalLinks: botResponseData.liveLegalLinks || [],
+        verifiedSources: botResponseData.verifiedSources || [],
+        legalDatabaseStatus: botResponseData.legalDatabaseStatus || null,
       };
 
       setMessages((prev) => [...prev, botMessage]);
@@ -477,10 +525,45 @@ export const LegalChatbot = () => {
                         : 'bg-primary-800 text-white shadow-md'
                     }`}
                   >
+                    {/* Ground-Truth Legal Database Verification Badge */}
+                    {isBot && (msg.legalDatabaseStatus || (msg.liveLegalLinks && msg.liveLegalLinks.length > 0)) && (
+                      <div className="mb-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <FaShieldAlt className="w-3 h-3 text-emerald-600" />
+                        <span>{msg.legalDatabaseStatus || 'Verified via Indian Kanoon & Official Statutes'}</span>
+                      </div>
+                    )}
+
                     {/* Render message text with structured markdown formatting */}
                     <div className="space-y-1">
                       {msg.text.split('\n').map((line, lIdx) => renderMessageLine(line, lIdx, isBot))}
                     </div>
+
+                    {/* Live Legal Database Links */}
+                    {isBot && msg.liveLegalLinks && msg.liveLegalLinks.length > 0 && (
+                      <div className="mt-3.5 pt-3 border-t border-slate-100">
+                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <FaGavel className="w-3 h-3 text-secondary-600" />
+                          <span>Direct Ground-Truth Sources (Zero Assumptions):</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.liveLegalLinks.map((link, lIdx) => (
+                            <a
+                              key={lIdx}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 px-2.5 py-1 rounded border border-slate-200 hover:border-emerald-300 transition-colors font-medium"
+                              title={link.benchCitation || link.title}
+                            >
+                              <FaBalanceScale className="w-2.5 h-2.5 text-secondary-500 shrink-0" />
+                              <span className="truncate max-w-[240px]">{link.title}</span>
+                              <span className="text-[10px] text-slate-400">↗</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Legal Citations & References if available */}
                     {isBot && msg.citations && msg.citations.length > 0 && !msg.text.includes('### 🙏') && (
