@@ -7,6 +7,112 @@
 
 export const legalScenarios = [
   // =========================================================================
+  // SCENARIO 0: BUILDER DOUBLE SALE & CHEQUE BOUNCE (SECTION 138 NI ACT & BNS 318/316)
+  // =========================================================================
+  {
+    id: 'builder_double_sale_and_cheque_bounce',
+    category: 'criminal',
+    categoryTitle: 'Cheque Bounce (Section 138 NI Act) & Real Estate Fraud',
+    matcher: (q) => {
+      const hasCheque = q.includes('cheque') || q.includes('check') || q.includes('bounced') || q.includes('bounce') || q.includes('dishonour') || q.includes('dishonored') || q.includes('138') || q.includes('insufficient funds');
+      const hasBuilderOrProperty = q.includes('builder') || q.includes('flat') || q.includes('apartment') || q.includes('third party') || q.includes('another buyer') || q.includes('registered agreement') || q.includes('possession') || q.includes('double sale');
+      return (hasCheque && hasBuilderOrProperty) || (hasCheque && (q.includes('legal notice') || q.includes('15 days') || q.includes('insufficient')));
+    },
+    directAnswer: 'This scenario involves two urgent legal actions: (1) Filing a Criminal Complaint under Section 138 of the Negotiable Instruments Act within the strict 30-day court limitation window, and (2) Lodging a Criminal FIR for Cheating and Criminal Breach of Trust (Section 318(4) & 316 BNS / Section 420 & 406 IPC) for selling an already contracted flat to a third party.',
+    applicableLaws: [
+      'Section 138, Negotiable Instruments Act, 1881 (Dishonour of cheque for insufficiency of funds - Up to 2 years jail or double cheque amount)',
+      'Section 142(1)(b), Negotiable Instruments Act, 1881 (Strict 30-day limitation period to file court complaint from expiry of 15-day notice)',
+      'Section 143A, Negotiable Instruments Act, 1881 (Power to order 20% interim compensation payable to complainant)',
+      'Section 318(4), Bharatiya Nyaya Sanhita, 2023 / Section 420 IPC (Cheating & dishonestly inducing delivery of property - Up to 7 years jail)',
+      'Section 316, Bharatiya Nyaya Sanhita, 2023 / Section 406 IPC (Criminal breach of trust - Up to 5 years jail)',
+      'Section 18 & Section 31, Real Estate (Regulation and Development) Act, 2016 (RERA complaint for fraudulent double allocation)',
+      'Order 37, Code of Civil Procedure, 1908 (Summary suit for debt recovery of ₹15,00,000 + commercial interest)'
+    ],
+    keyRights: [
+      'Right to file Criminal Complaint under Section 138 NI Act within 30 days of the expiry of 15-day notice period',
+      'Right to claim 20% interim compensation (₹3,00,000) under Section 143A NI Act during trial',
+      'Right to file Criminal FIR for Cheating and Fraud for illegal sale of registered flat to a third party',
+      'Right to seek freezing of builder project escrow accounts and damages under RERA Section 18'
+    ],
+    actions: [
+      'CALCULATE LIMITATION: Notice sent 15 March 2026, 15 days expired ~31 March 2026. You have EXACTLY 30 DAYS (until ~30 April 2026) to file the Section 138 Complaint before the Judicial Magistrate!',
+      'File the Section 138 Criminal Complaint before the Judicial Magistrate / Metropolitan Magistrate having jurisdiction over your bank branch.',
+      'File an Application under Section 143A NI Act requesting the Magistrate to direct the builder to deposit 20% (₹3,00,000) as interim compensation.',
+      'File a Criminal FIR with the Police / Economic Offences Wing (EOW) for Cheating (Section 318(4) BNS / 420 IPC) and Criminal Breach of Trust (Section 316 BNS / 406 IPC).',
+      'File an online complaint before the State RERA Authority under Section 31 seeking freezing of project sales and award of statutory interest.'
+    ],
+    helplines: [
+      'e-Courts Case Filing Portal: services.ecourts.gov.in',
+      'Economic Offences Wing (EOW) / Police Helpline: 112',
+      'State RERA Authority Portal',
+      'NALSA Free Legal Aid Helpline: 15100'
+    ],
+    fullAnswer: `### ⚖️ Legal Advisory: Cheque Bounce (Section 138 NI Act) & Builder Double-Sale Fraud
+
+**Direct Legal Answer:** **The builder has committed severe criminal offences and statutory violations.** You have **two urgent and simultaneous legal remedies** that must be initiated immediately:
+1. **Criminal Complaint under Section 138 of the Negotiable Instruments Act, 1881:** Because the 15-day statutory notice period has lapsed without payment, **you have a strict statutory limitation window of exactly 30 days to file a Criminal Complaint before the Judicial Magistrate**.
+2. **Criminal FIR for Cheating & Fraud (Section 318(4) & Section 316 BNS / Section 420 & Section 406 IPC):** Selling a flat to a third party despite an existing registered agreement with you and pocketing your ₹15,00,000 is an independent, non-bailable cognizable criminal fraud.
+
+---
+
+#### 1. Detailed Legal Analysis of Your Specific Facts
+
+* **Issue 1: The Section 138 NI Act Limitation Clock is Ticking!**
+  * **Cheque Dishonour:** The cheque of ₹15,00,000 was dishonoured on **10 March 2026** for "insufficient funds".
+  * **Statutory Notice:** You sent the legal demand notice on **15 March 2026** (within the mandatory 30-day window under Section 138(b) of the NI Act).
+  * **15-Day Cure Period:** The builder was given 15 days to pay, which expired on approximately **30/31 March 2026**.
+  * **CRITICAL 30-DAY LIMITATION DEADLINE:** Under **Section 142(1)(b) of the NI Act**, the cause of action arose on the 16th day (~1 April 2026). **You have strictly 30 days from this date (i.e. until approximately 30 April / 1 May 2026) to file a formal Criminal Complaint before the Judicial Magistrate First Class (JMFC) or Metropolitan Magistrate (MM).**
+  * *Warning:* Do not delay! If you miss this 30-day window, you will have to file an application for condonation of delay proving sufficient unavoidable cause.
+  * **Penalties on Builder:** Up to **2 years imprisonment**, or a fine extending up to **double the cheque amount (₹30,00,000)**, or both.
+  * **Interim Relief (Section 143A NI Act):** In your complaint, you can file an application under **Section 143A NI Act** praying for an order directing the accused builder to deposit **up to 20% of the cheque amount (₹3,00,000)** directly into your bank account as interim compensation while the trial is pending!
+
+* **Issue 2: Criminal Offence of Double Sale of Property (Cheating & Breach of Trust)**
+  * You executed a **registered agreement for sale** and paid ₹15,00,000. Under Indian law, an agreement to sell creates a binding legal encumbrance on the property.
+  * Selling the identical flat to a third party without your registered cancellation or mutual consent is **criminal fraud**:
+    * **Section 318(4) BNS / Section 420 IPC (Cheating & Dishonestly Inducing Delivery):** Punishable with imprisonment up to **7 years plus fine**.
+    * **Section 316 BNS / Section 406 IPC (Criminal Breach of Trust):** Entrustment of ₹15 Lakhs for a specific flat misappropriated for wrongful gain; punishable with imprisonment up to **5 years**.
+    * **Section 336 / 338 BNS / Section 467/468 IPC (Forgery):** If the builder falsely represented to the third party that the flat was unencumbered, it constitutes fraudulent forgery of title.
+
+* **Issue 3: RERA & Civil Debt Recovery Remedies**
+  * **State RERA Authority:** File an urgent complaint under **Section 18 & Section 31 of RERA, 2016**. RERA has the power to freeze the builder's bank accounts, restrain further registrations in the project, and order refund with statutory interest (SBI MCLR + 2%) plus substantial compensation for mental agony.
+  * **Order 37 CPC Summary Suit:** You can also file a civil **Summary Suit for Recovery of Debt** before the Civil Court based on the dishonoured cheque and admitted refund liability to attach the builder's commercial assets.
+
+---
+
+#### 2. Applicable Indian Laws & Statutory Provisions
+* **Section 138 & Section 142(1)(b), Negotiable Instruments Act, 1881** (Dishonour of cheque for insufficiency of funds & 30-day limitation mandate)
+* **Section 143A, Negotiable Instruments Act, 1881** (Interim compensation up to 20% of the cheque amount)
+* **Section 318(4), Bharatiya Nyaya Sanhita, 2023 / Section 420 IPC** (Cheating & dishonestly inducing delivery of property)
+* **Section 316, Bharatiya Nyaya Sanhita, 2023 / Section 406 IPC** (Criminal breach of trust)
+* **Section 18 & Section 31, Real Estate (Regulation and Development) Act, 2016 (RERA)** (Fraudulent double allotment & mandatory refund with interest)
+* **Order 37, Code of Civil Procedure (CPC), 1908** (Summary suit for debt recovery)
+
+---
+
+#### 3. Step-by-Step Action Plan & Remedies
+1. **File Section 138 Criminal Complaint in Magistrate Court (URGENT):**
+   Engage a lawyer or legal aid clinic to draft and file the Section 138 Criminal Complaint before the Judicial Magistrate having territorial jurisdiction over the bank branch where your account is maintained (Section 142(2) NI Act). Attach:
+   * Original Cheque (₹15,00,000)
+   * Bank Return Memo dated 10 March 2026 (Insufficient Funds)
+   * Copy of Statutory Legal Demand Notice dated 15 March 2026
+   * Registered Postal Receipt and India Post Delivery Tracking Confirmation showing delivery.
+2. **Demand 20% Interim Compensation:** Move an application under **Section 143A NI Act** in the Magistrate Court requesting immediate deposit of ₹3,00,000 by the builder.
+3. **Lodge Criminal FIR for Cheating (Section 318(4) BNS / 420 IPC):** Submit a written complaint to the **Economic Offences Wing (EOW)** or local police station detailing the fraudulent double sale. If the police refuse to register an FIR, file a petition under **Section 175(3) BNSS (156(3) CrPC)** before the Magistrate.
+4. **File RERA Complaint:** Submit a complaint under Section 31 on your State RERA website with a copy of your registered agreement to block the builder from creating further third-party rights on the project.
+
+---
+
+#### 4. Official Redressal Helplines & Authorities
+* 📞 **District Judicial Magistrate / e-Courts:** services.ecourts.gov.in
+* 📞 **Police & Economic Offences Wing (EOW):** 112
+* 📞 **State RERA Authority Portal (e.g., MahaRERA, UP-RERA, TNRERA, K-RERA)**
+* 📞 **NALSA Free Legal Aid Helpline:** 15100
+
+---
+💡 *Need a formal draft? You can generate an official Section 138 Magistrate Complaint or Police Fraud Complaint in 1-click using the **NyayaSetu Document Drafter**.*`
+  },
+
+  // =========================================================================
   // SCENARIO 1: TRAFFIC POLICE STOP, KEY SEIZURE & PHYSICAL VIOLENCE
   // =========================================================================
   {
