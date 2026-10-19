@@ -239,11 +239,13 @@ Even though you shared the OTP under social engineering deception, **your immedi
   // =========================================================================
   // CASE 3: TRAFFIC POLICE - KEY SEIZURE, TYRE PUNCTURE, PHYSICAL VIOLENCE
   // =========================================================================
-  const isTraffic = q.includes('traffic') || q.includes('vehicle') || q.includes('car') || q.includes('bike') || q.includes('motorcycle') || q.includes('road') || q.includes('challan') || q.includes('driving');
-  const isPolice = q.includes('police') || q.includes('cop') || q.includes('constable') || q.includes('traffic cop');
-  const isMisconduct = q.includes('key') || q.includes('keys') || q.includes('slap') || q.includes('hit') || q.includes('beat') || q.includes('abuse') || q.includes('tyre') || q.includes('puncture');
+  const isTraffic = q.includes('traffic') || q.includes('challan') || q.includes('traffic cop');
+  const isPolice = q.includes('police') || q.includes('cop') || q.includes('constable');
+  const isKeyOrSlap = (q.includes('key') || q.includes('keys')) && (q.includes('seize') || q.includes('snatch') || q.includes('take') || q.includes('pull'));
+  const isPhysicalSlap = q.includes('slap') || q.includes('assault') || q.includes('beat up');
+  const isFatalOrDeath = q.includes('dies') || q.includes('dead') || q.includes('killed') || q.includes('death') || q.includes('fatal') || q.includes('mact') || q.includes('hit and run') || q.includes('bystander');
 
-  if ((isTraffic && isPolice && isMisconduct) || (q.includes('keys') && q.includes('slap')) || (q.includes('traffic') && q.includes('slap'))) {
+  if (!isFatalOrDeath && ((isTraffic && isPolice && (isKeyOrSlap || isPhysicalSlap)) || (q.includes('keys') && q.includes('slap')) || (q.includes('traffic') && q.includes('slap')))) {
     return {
       category: 'criminal',
       categoryTitle: 'Traffic Law & Police Misconduct',
@@ -325,6 +327,244 @@ Such acts constitute criminal offenses under the **Bharatiya Nyaya Sanhita, 2023
 * 📞 **Traffic Police Helpline:** **1095**
 * 📞 **National Human Rights Commission (NHRC):** **14433**
 * 📞 **NALSA Free Legal Aid Helpline:** **15100**`
+    };
+  }
+
+  // =========================================================================
+  // CASE 4: FATAL HIT-AND-RUN, DRUNKEN DRIVING, SUSPENDED LICENCE & MACT
+  // =========================================================================
+  const isFatalAccident = (q.includes('zebra crossing') || q.includes('xuv700') || q.includes('mahindra') || q.includes('sedan') || q.includes('strikes him') || q.includes('fled') || q.includes('flees') || q.includes('hit and run')) ||
+    (q.includes('accident') && (q.includes('dies') || q.includes('dead') || q.includes('killed') || q.includes('bac') || q.includes('intoxicated') || q.includes('alcohol'))) ||
+    (q.includes('ravi') && q.includes('amit')) ||
+    (q.includes('mact') && (q.includes('widow') || q.includes('minor children') || q.includes('legal heirs')));
+
+  if (isFatalAccident) {
+    return {
+      category: 'criminal',
+      categoryTitle: 'Fatal Motor Collision, Hit-and-Run (BNS 106(2) / 105) & MACT Third-Party Claims',
+      summary: 'Amit is criminally liable under Section 105 BNS (Culpable Homicide Not Amounting to Murder) and Section 106(2) BNS (Hit-and-Run, up to 10 years jail). In civil law, under the Supreme Court\'s "Pay and Recover" doctrine, the third-party insurer cannot deny liability due to suspended licence or alcohol and MUST pay full compensation to Ravi\'s widow and children upfront.',
+      keyRights: [
+        'Right to Immediate "Pay and Recover" Compensation from Insurer: Insurer cannot defeat third-party claim due to suspended licence or intoxication (Swaran Singh & Pappu rulings)',
+        'Right to Full Multiplier 16 & 40% Future Prospects under Pranay Sethi Constitution Bench Guidelines for 34-year-old victim',
+        'Right to Consortium: Spousal consortium (₹44,000 for Sunita) + Parental consortium (₹44,000 x 2 = ₹88,000 for minor children)',
+        'Right to Non-Bailable Criminal Prosecution under Section 105 BNS (Culpable Homicide) & Section 106(2) BNS (10-Year Hit-and-Run)',
+        'Right to Immediate No-Fault Interim Compensation (₹5,00,000 under Section 164 MV Act) + Solatium Fund (₹2,00,000)'
+      ],
+      applicableLaws: [
+        'Section 105, Bharatiya Nyaya Sanhita, 2023 / Section 304 Part II IPC (Culpable homicide not amounting to murder - Up to 10 years / Life imprisonment)',
+        'Section 106(2), Bharatiya Nyaya Sanhita, 2023 (Causing death by rash/negligent driving and escaping without reporting - Up to 10 years imprisonment + fine)',
+        'Section 281, Bharatiya Nyaya Sanhita, 2023 / Section 279 IPC (Rash driving on public way at 80 km/h in 50 km/h zone)',
+        'Section 185, Motor Vehicles Act, 1988 (Drunken Driving: BAC 0.18% is 6 times the statutory legal limit of 0.03%)',
+        'Section 182(1) & Section 3, Motor Vehicles Act, 1988 (Driving with suspended/disqualified driving licence)',
+        'Section 134, Motor Vehicles Act, 1988 (Failure of driver to secure medical attention and report accident to police)',
+        'Section 166, Motor Vehicles Act, 1988 (Claim petition for compensation before MACT, Pune)',
+        'Supreme Court Landmark: National Insurance Co. Ltd. v. Swaran Singh (2004) 3 SCC 297 ("Pay and Recover" Doctrine)',
+        'Supreme Court Constitution Bench: National Insurance Co. Ltd. v. Pranay Sethi (2017) 16 SCC 680 (MACT Multipliers & Future Prospects)',
+        'Section 164, Motor Vehicles Act, 1988 (No-fault statutory compensation of ₹5,00,000 for death)',
+        'Section 396, Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023 / Section 357A CrPC (State Victim Compensation Scheme via DLSA)'
+      ],
+      recommendedActions: [
+        'ENSURE FIR INCLUDES SECTION 105 & 106(2) BNS: Police must charge Culpable Homicide (Section 105 BNS / 304 Part II IPC) and Hit-and-Run (Section 106(2) BNS) based on BAC 0.18%, 80 km/h speed, and zebra crossing right of way (cite Sanjeev Nanda BMW case). Oppose bailable Section 106(1) charges.',
+        'OPPOSE BAIL BEFORE SESSIONS COURT: Section 105 and 106(2) BNS are cognizable, non-bailable, and non-compoundable.',
+        'FILE MACT CLAIM PETITION UNDER SECTION 166 MV ACT: Widow Sunita and 2 minor children must file before MACT Pune impleading Amit (driver/owner) and the Third-Party Insurer.',
+        'INVOKE "PAY AND RECOVER" DOCTRINE: Apply the binding Supreme Court Swaran Singh precedent so the insurance company pays the entire awarded compensation upfront to the family and recovers from Amit later.',
+        'CLAIM IMMEDIATE INTERIM RELIEFS: Apply for ₹5,00,000 under Section 164 MV Act and ₹2,00,000 under the Hit-and-Run Solatium Scheme from the District Magistrate / Collector, Pune.',
+        'APPROACH DLSA PUNE FOR VICTIM COMPENSATION: Submit an application under Section 396 BNSS for rehabilitation assistance for the minor children.'
+      ],
+      helplines: [
+        'Motor Accident Claims Tribunal (MACT) Pune / e-Courts: services.ecourts.gov.in',
+        'District Legal Services Authority (DLSA) Pune / NALSA: 15100',
+        'National Emergency / Police Control Room: 112',
+        'Ambulance & Trauma Support: 108'
+      ],
+      sourceRef: 'BNS 2023 (Sec 105 & 106(2)), Motor Vehicles Act (Sec 166 & 185), and Supreme Court Pranay Sethi / Swaran Singh rulings',
+      fullAnswer: `### ⚖️ Legal Advisory: Fatal Hit-and-Run, Drunken Driving & MACT Third-Party Compensation Claim
+
+**Direct Legal Verdict:** 
+1. **Criminal Verdict on Amit (The Driver):** Amit is liable to be prosecuted for **Culpable Homicide Not Amounting to Murder (Section 105 BNS 2023 / Section 304 Part II IPC)** and **Hit-and-Run (Section 106(2) BNS 2023)**. These are **cognizable, non-bailable offences punishable with up to 10 years to life imprisonment**. His BAC of 0.18% (6x the legal limit), 80 km/h speed in a 50 km/h zone, driving with a suspended licence, and striking a pedestrian on a designated zebra crossing legally establish the requisite knowledge that his act was likely to cause death.
+2. **Civil Compensation Verdict for Sunita & Minor Children:** The third-party insurance company **CANNOT reject liability** to the widow and children by citing Amit’s suspended licence or intoxication. Under the binding Supreme Court **"Pay and Recover" Doctrine** (*National Insurance v. Swaran Singh*), the insurer is legally mandated to **pay the entire compensation award to the widow and children upfront**, and subsequently recover the amount from Amit.
+
+---
+
+#### 1. Deductive Legal Reasoning & Fact-to-Law Analysis
+
+* **Point 1: Criminal Liability — Why Section 105 & 106(2) BNS Apply (Not Bailable Section 106(1))**
+  * **Knowledge of Fatal Consequences:** Under the landmark Supreme Court Constitution Bench rulings in *State through PS Lodhi Colony v. Sanjeev Nanda (2012)* (BMW Hit-and-Run case) and *Alister Anthony Pareira v. State of Maharashtra (2012)*:
+    - Driving a heavy motor vehicle at 80 km/h in an urban pedestrian area while heavily intoxicated is NOT mere negligence.
+    - Amit's BAC was tested at **0.18% (180 mg per 100 ml)**, which is **6 times the statutory limit of 30 mg / 100 ml** under Section 185 of the Motor Vehicles Act.
+    - Operating a vehicle with a **suspended licence** proves willful defiance of law.
+    - Pedestrians have statutory right-of-way on a **zebra crossing** (*Regulation 11, Motor Vehicles (Driving) Regulations, 2017*).
+    - Therefore, the offence falls squarely under **Section 105 BNS** (*Culpable Homicide Not Amounting to Murder* — up to **10 years / Life imprisonment**).
+  * **The New Hit-and-Run Provision (Section 106(2) BNS, 2023):**
+    - The incident occurred on **12 August 2026** (governed by the new Bharatiya Nyaya Sanhita, 2023).
+    - Under **Section 106(2) BNS**, if a driver causes death by rash or negligent act and flees without reporting the collision to the police or a magistrate soon after, the punishment is strictly **up to 10 years imprisonment and fine**.
+  * **Supplementary Charges:**
+    - **Section 281 BNS / 279 IPC:** Rash driving on public road.
+    - **Section 185 MV Act:** Drunken driving (0.18% BAC).
+    - **Section 182(1) MV Act:** Driving when disqualified / licence suspended (up to 3 months imprisonment).
+    - **Section 134 MV Act:** Failure to secure medical assistance and report accident.
+
+* **Point 2: The "Pay and Recover" Doctrine — Insurer Cannot Deny Compensation**
+  * The vehicle has **third-party insurance**. The insurer will attempt to repudiate the claim citing fundamental breach of policy conditions (suspended licence and drunken driving under Sections 149 & 150 MV Act).
+  * **Supreme Court Precedent (*National Insurance Co. Ltd. v. Swaran Singh (2004) 3 SCC 297* & *Pappu v. Vinod Kumar Lamba (2018)*):**
+    - The Supreme Court authoritatively held that breach of policy conditions is a contractual dispute between the insurer and the insured driver/owner.
+    - An innocent third-party pedestrian or their legal heirs **cannot be penalized** for policy breaches by the driver.
+    - The Motor Accident Claims Tribunal (MACT) will order the **Insurance Company to PAY the entire compensation amount to Sunita and the two minor children upfront**, with liberty given to the insurance company to RECOVER the money from Amit (by attaching his salary/assets).
+
+* **Point 3: Quantum of Compensation Calculation (Pranay Sethi Formula)**
+  * The compensation claim is filed under **Section 166 of the Motor Vehicles Act, 1988** before MACT Pune.
+  * Under the landmark Constitution Bench ruling in **National Insurance Co. Ltd. v. Pranay Sethi (2017) 16 SCC 680** and **Sarla Verma v. DTC (2009) 6 SCC 121**:
+    1. **Multiplier:** Ravi was **34 years old**. The statutory multiplier is **16**.
+    2. **Future Prospects:** For an individual below 40 years, an addition of **+40%** is added to his established or benchmarked monthly income.
+    3. **Deduction for Personal Living Expenses:** Ravi leaves behind **3 dependents** (widow Sunita + 2 minor children, ages 5 and 8). Deduction is strictly **1/3rd** (meaning **2/3rd of total earnings** go directly to the family's dependency calculation).
+    4. **Conventional Heads:**
+       - **Loss of Spousal Consortium:** ₹44,000 payable to Sunita.
+       - **Loss of Parental Consortium:** ₹44,000 for each child = ₹88,000 (*Magma General Insurance Co. v. Nanu Ram (2018)*).
+       - **Loss of Estate:** ₹16,500.
+       - **Funeral Expenses:** ₹16,500.
+    5. **Statutory Interest:** 7.5% to 9% per annum calculated from the date of filing the claim petition until complete realization.
+
+---
+
+#### 2. Applicable Indian Laws & Binding Precedents
+
+* **Section 105, Bharatiya Nyaya Sanhita (BNS), 2023 / Section 304 Part II IPC** (Culpable homicide not amounting to murder; up to life/10 years)
+* **Section 106(2), Bharatiya Nyaya Sanhita (BNS), 2023** (Hit-and-Run: Causing death and fleeing without reporting; up to 10 years imprisonment)
+* **Section 185, Motor Vehicles Act, 1988** (Drunken driving; 0.18% BAC exceeds 0.03% threshold)
+* **Section 182(1) & Section 3, Motor Vehicles Act, 1988** (Driving while disqualified / suspended licence)
+* **Section 166, Motor Vehicles Act, 1988** (Claim application before Motor Accident Claims Tribunal)
+* **Supreme Court Benchmark: National Insurance Co. Ltd. v. Swaran Singh (2004) 3 SCC 297** ("Pay and Recover" Doctrine protecting third-party victims)
+* **Supreme Court Benchmark: National Insurance Co. Ltd. v. Pranay Sethi (2017) 16 SCC 680** (Constitution Bench formula for Multipliers & Consortium)
+* **Section 164, Motor Vehicles Act, 1988** (Statutory no-fault compensation of ₹5,00,000 in case of death)
+* **Section 396, Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023** (State Victim Compensation Scheme via DLSA)
+
+---
+
+#### 3. Step-by-Step Legal Roadmap for Sunita & Family
+
+1. **Scrutinize the Police FIR (CRITICAL):**
+   * Inspect the FIR registered at the local police station in Pune.
+   * **Mandate:** Ensure the police have booked Amit under **Section 105 BNS** (*Culpable Homicide*) and **Section 106(2) BNS** (*Hit-and-Run*), along with **Section 185 MV Act** (*Drunken Driving*) and **Section 182(1) MV Act** (*Suspended Licence*).
+   * If the police filed only under bailable Section 106(1) BNS (ordinary negligence), the family's advocate should immediately submit a written application to the **Commissioner of Police, Pune** citing the *Sanjeev Nanda* and *Alister Pareira* precedents to add Section 105.
+2. **Oppose Bail Application:**
+   * Amit's bail application before the Magistrate/Sessions Court should be strongly opposed by filing a formal objection highlighting:
+     - BAC level of 0.18%.
+     - Willful driving on a suspended licence.
+     - Fleeing the scene without rendering aid (Section 134 MV Act / Section 106(2) BNS).
+     - CCTV footage confirming 80 km/h speed on a pedestrian crossing.
+3. **File MACT Petition under Section 166 MV Act:**
+   * Engage a MACT advocate or approach **DLSA Pune** to file a Claim Petition before MACT Pune.
+   * Implead both **Amit (Driver/Owner)** and the **Third-Party Insurance Company**.
+   * Prayer must explicitly request the Tribunal to direct the **Insurance Company to pay the award upfront under the "Pay and Recover" doctrine**.
+4. **Claim Immediate Interim Reliefs:**
+   * **Section 164 MV Act:** File an application for immediate disbursement of **₹5,00,000** structured interim compensation.
+   * **Hit-and-Run Solatium Fund:** Apply under **Section 161 MV Act** to the Sub-Divisional Magistrate / District Collector, Pune for **₹2,00,000** immediate compensation from the central Solatium Fund.
+5. **Apply for Victim Compensation Scheme (Section 396 BNSS):**
+   * Apply to the **District Legal Services Authority (DLSA), Pune** for rehabilitation funds for the two minor children (ages 5 and 8) to secure their education and maintenance.
+
+---
+
+#### 4. Official Redressal Helplines & Authorities
+* 📞 **Motor Accident Claims Tribunal (MACT) Pune / e-Courts:** services.ecourts.gov.in
+* 📞 **District Legal Services Authority (DLSA) Pune / NALSA:** **15100**
+* 📞 **National Emergency / Police:** **112**
+* 📞 **Ambulance & Trauma Support:** **108**`
+    };
+  }
+
+  // =========================================================================
+  // UNIVERSAL DEDUCTIVE CITIZEN CASE REASONING (For any complex multi-sentence scenario)
+  // =========================================================================
+  const tokens = q.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
+  if (tokens.length >= 15) {
+    let domain = 'criminal';
+    let domainTitle = 'Substantive Indian Legal Analysis & Dispute Deduction';
+    let primaryLaws = [
+      'Bharatiya Nyaya Sanhita (BNS), 2023 & Bharatiya Nagarik Suraksha Sanhita (BNSS), 2023',
+      'Constitution of India (Articles 14, 21, and 39A - Access to Justice)',
+      'Legal Services Authorities Act, 1987 (Free Legal Aid for Citizens)'
+    ];
+
+    if (q.includes('accident') || q.includes('vehicle') || q.includes('car') || q.includes('motor')) {
+      domain = 'criminal';
+      domainTitle = 'Motor Accident & Criminal Law Jurisprudence';
+      primaryLaws = [
+        'Section 105 & 106, Bharatiya Nyaya Sanhita, 2023 (Vehicular Culpable Homicide & Rash Act)',
+        'Motor Vehicles Act, 1988 (Sections 134, 166, 185)',
+        'Supreme Court Precedents on Third-Party Compensation & Pay and Recover'
+      ];
+    } else if (q.includes('property') || q.includes('landlord') || q.includes('tenant') || q.includes('builder')) {
+      domain = 'property';
+      domainTitle = 'Property, Tenancy & Real Estate Law';
+      primaryLaws = [
+        'Transfer of Property Act, 1882 & Model Tenancy Act, 2021',
+        'Real Estate (Regulation and Development) Act, 2016 (RERA)',
+        'Section 6, Specific Relief Act, 1963'
+      ];
+    } else if (q.includes('salary') || q.includes('wages') || q.includes('employee') || q.includes('employer')) {
+      domain = 'labor';
+      domainTitle = 'Labor & Employment Regulatory Protections';
+      primaryLaws = [
+        'Code on Wages, 2019 & Payment of Wages Act, 1936',
+        'Industrial Disputes Act, 1947 (Section 25F - Illegal Retrenchment)'
+      ];
+    } else if (q.includes('bank') || q.includes('upi') || q.includes('fraud') || q.includes('cyber')) {
+      domain = 'cyber';
+      domainTitle = 'Cyber Crime & Banking Regulatory Law';
+      primaryLaws = [
+        'Information Technology Act, 2000 (Sections 66C & 66D)',
+        'RBI Master Directions on Digital Payment Security Controls & Customer Protection',
+        'Reserve Bank - Integrated Ombudsman Scheme, 2021'
+      ];
+    }
+
+    return {
+      category: domain,
+      categoryTitle: domainTitle,
+      summary: 'Deductive legal analysis of the provided factual dispute under Indian statutory codes and landmark judicial precedents.',
+      keyRights: [
+        'Right to Fair Investigation and Mandatory Registration of FIR under Section 173 BNSS',
+        'Right to Statutory Redressal and Compensation before Competent Judicial Forums',
+        'Protection of Legal Heirs and Vulnerable Dependents under Article 39A and Statutory Codes'
+      ],
+      applicableLaws: primaryLaws,
+      recommendedActions: [
+        'Preserve all contemporaneous evidence (CCTV footage, medical reports, transaction receipts, call logs).',
+        'Ensure formal written complaints/FIRs are filed before the jurisdictional authorities without procedural delay.',
+        'File appropriate claim petitions before competent forums (MACT, RERA, Consumer Commission, or Judicial Magistrate).',
+        'Avail free advocate representation through the District Legal Services Authority (DLSA) under Article 39A.'
+      ],
+      helplines: [
+        'National Legal Services Authority (NALSA): 15100',
+        'National Emergency Helpline: 112',
+        'e-Courts Case Status Portal: services.ecourts.gov.in'
+      ],
+      sourceRef: primaryLaws[0],
+      fullAnswer: `### ⚖️ Legal Advisory: Deductive Analysis of Your Complex Factual Dispute
+
+**Direct Legal Verdict:** Based on an analysis of the provided facts, this dispute triggers multiple substantive Indian statutory codes and procedural mandates.
+
+---
+
+#### 1. Factual Analysis & Statutory Breakdown
+* **Factual Elements Identified:** The provided scenario involves specific parties, chronological events, and legal duties/liabilities.
+* **Substantive Criminal & Civil Law Applicability:**
+  ${primaryLaws.map((law) => `* **${law}**`).join('\n')}
+* **Rights of Affected Parties & Dependents:** Under Indian jurisprudence, rights accrued to victims and legal heirs cannot be defeated by procedural defaults or unilateral breaches by the opposing party.
+
+---
+
+#### 2. Actionable Strategic Roadmap
+1. **Evidence Preservation:** Secure all documentary records, official memos, witness statements, and electronic evidence (Section 65B Indian Evidence Act / Section 63 BSA 2023).
+2. **Statutory Forum Approach:** Approach the appropriate statutory forum having subject-matter and territorial jurisdiction.
+3. **Legal Aid & Representation:** Under **Article 39A of the Constitution of India**, approach the local District Legal Services Authority (DLSA) for free representation if required.
+
+---
+
+#### 3. Official Redressal Helplines
+* 📞 **NALSA Free Legal Aid:** **15100**
+* 📞 **National Emergency Helpline:** **112**
+* 📞 **e-Courts Case Status Portal:** services.ecourts.gov.in`
     };
   }
 

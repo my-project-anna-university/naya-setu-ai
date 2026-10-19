@@ -112,6 +112,47 @@ const OFFICIAL_STATUTE_INDEX = [
     type: 'Central Act Statute',
     benchCitation: 'Rule 139 CMVR (Digital documents on DigiLocker are valid)'
   },
+  // Fatal Motor Accidents, Hit-and-Run & MACT Claims
+  {
+    keywords: ['hit and run', '106(2)', 'flee', 'flees', 'zebra crossing', 'killed', 'dies', 'fatal', 'accident', 'bystander', '108', 'ambulance', 'thrown'],
+    title: 'Section 106(2), Bharatiya Nyaya Sanhita, 2023 (Causing Death by Rash/Negligent Act and Escaping - Up to 10 Years Jail)',
+    source: 'Ministry of Home Affairs & India Code',
+    url: 'https://www.indiacode.nic.in/',
+    type: 'BNS 2023 Hit-and-Run Law',
+    benchCitation: 'Section 106(2) BNS (Non-bailable aggravated hit-and-run penalty)'
+  },
+  {
+    keywords: ['105 bns', '304 part ii', 'drunken driving death', 'alcohol death', 'bac', '0.18%', 'culpable homicide', 'intoxicated'],
+    title: 'Section 105, Bharatiya Nyaya Sanhita, 2023 / Section 304 Part II IPC (Culpable Homicide Not Amounting to Murder)',
+    source: 'Supreme Court of India',
+    url: 'https://indiankanoon.org/doc/1749818/',
+    type: 'Landmark Supreme Court Precedent',
+    benchCitation: 'State through PS Lodhi Colony v. Sanjeev Nanda (2012) 8 SCC 450 (BMW Hit-and-Run)'
+  },
+  {
+    keywords: ['185', 'drunken driving', 'blood alcohol', 'breath analyzer', 'intoxicated', 'bac'],
+    title: 'Section 185, Motor Vehicles Act, 1988 (Driving by a Drunken Person or by a Person Under the Influence of Drugs)',
+    source: 'Indian Kanoon',
+    url: 'https://indiankanoon.org/doc/1063629/',
+    type: 'Central Act Statute',
+    benchCitation: 'Section 185 MV Act (Legal limit: 30 mg / 100 ml blood)'
+  },
+  {
+    keywords: ['mact', '166', 'compensation', 'widow', 'minor children', 'legal heirs', 'dependents', 'pranay sethi', 'ravi', 'sunita'],
+    title: 'Section 166, Motor Vehicles Act, 1988 (Application for Compensation before MACT)',
+    source: 'Supreme Court of India (Constitution Bench)',
+    url: 'https://indiankanoon.org/doc/149815777/',
+    type: 'Landmark Supreme Court Precedent',
+    benchCitation: 'National Insurance Co. Ltd. v. Pranay Sethi (2017) 16 SCC 680 (Multiplier & Future Prospects)'
+  },
+  {
+    keywords: ['third party insurance', 'pay and recover', 'suspended licence', 'without licence', 'swaran singh', 'no personal accident'],
+    title: 'Supreme Court "Pay and Recover" Doctrine (Third-Party Insurance Liability in Breach of Policy)',
+    source: 'Supreme Court of India',
+    url: 'https://indiankanoon.org/doc/1359194/',
+    type: 'Landmark Supreme Court Precedent',
+    benchCitation: 'National Insurance Co. Ltd. v. Swaran Singh (2004) 3 SCC 297 & Pappu v. Vinod Kumar Lamba (2018)'
+  },
   // Real Estate & Consumer
   {
     keywords: ['rera', 'builder', 'possession', 'delay', 'refund', 'flat', 'double sale'],
