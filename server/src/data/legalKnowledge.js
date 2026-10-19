@@ -5,6 +5,7 @@
  */
 
 import { matchLegalScenario } from './legalScenarios.js';
+import { analyzeCitizenCase } from './legalReasoningEngine.js';
 
 export const legalCategories = [
   {
@@ -600,17 +601,33 @@ export function queryKnowledgeBase(queryText, requestedCategory = null) {
   const wordCount = tokens.length;
 
   // =========================================================================
+  // PRIORITY 1: AUTONOMOUS DEDUCTIVE LEGAL REASONING ENGINE (Highest Precedence)
+  // Evaluates complex multi-step citizen facts, timelines, and legal claims
+  // =========================================================================
+  const reasonedCase = analyzeCitizenCase(query, rawQuery);
+  if (reasonedCase) {
+    return reasonedCase;
+  }
+
+  // =========================================================================
+  // PRIORITY 2: PRE-INDEXED LEGAL SCENARIOS ENGINE
+  // =========================================================================
+  const scenarioMatch = matchLegalScenario(query, rawQuery);
+  if (scenarioMatch) {
+    return scenarioMatch;
+  }
+
+  // =========================================================================
   // INTENT 1: GREETINGS (hi, hello, namaste, good morning, etc.)
   // =========================================================================
   const greetingWords = ['hi', 'hello', 'hey', 'namaste', 'namaskar', 'pranam', 'vanakkam', 'adab', 'hola', 'greetings'];
   const hasGreetingWord = tokens.some((t) => greetingWords.includes(t));
   const isTimeGreeting = query.includes('good morning') || query.includes('good afternoon') || query.includes('good evening');
   const legalKeywordsPresent = tokens.some((t) =>
-    ['fir', 'police', 'rent', 'landlord', 'salary', 'fraud', 'arrest', 'case', 'court', 'refund', 'money', 'scam', 'mrp', 'wage', 'tenant', 'bail', 'posh', 'rti', 'cheated'].includes(t)
+    ['fir', 'police', 'rent', 'landlord', 'salary', 'fraud', 'arrest', 'case', 'court', 'refund', 'money', 'scam', 'mrp', 'wage', 'tenant', 'bail', 'posh', 'rti', 'cheated', 'bank', 'cheque', 'upi', 'otp'].includes(t)
   );
 
-  const isGreeting = (wordCount <= 3 && (hasGreetingWord || isTimeGreeting)) ||
-    (wordCount <= 5 && (hasGreetingWord || isTimeGreeting) && !legalKeywordsPresent);
+  const isGreeting = (wordCount <= 3 && (hasGreetingWord || isTimeGreeting) && !legalKeywordsPresent);
 
   if (isGreeting) {
     const fullAnswer = `### 🙏 Namaste! I am NyayaSetu AI
@@ -666,17 +683,22 @@ What legal or citizen issue would you like help with today?`;
   // =========================================================================
   // INTENT 2: CAPABILITIES / HELP / IDENTITY / ABOUT
   // =========================================================================
-  const capabilityPatterns = [
+  const capabilityExactPhrases = [
     'what can you do', 'what do you do', 'who are you', 'what are you',
-    'how can you help', 'how do you work', 'what is this', 'what is nyayasetu',
-    'what can i ask', 'what can i do', 'help me', 'help', 'features',
-    'guide me', 'how to use', 'about you', 'tell me about yourself',
+    'how can you help', 'how do you work', 'what is this nyayasetu', 'what is nyayasetu',
+    'what can i ask', 'what can i do', 'tell me about yourself',
     'your capabilities', 'capabilities', 'what are your services',
-    'what services', 'how to use this', 'can you help me'
+    'what services do you offer', 'how to use this platform'
   ];
 
-  const isCapabilityQuery = capabilityPatterns.some((pattern) => query.includes(pattern)) ||
-    (wordCount <= 2 && tokens.includes('help') && !legalKeywordsPresent);
+  const hasFactualScenario = wordCount > 6 || tokens.some((t) =>
+    ['bank', 'cheque', 'check', 'bounced', 'upi', 'otp', 'police', 'builder', 'salary', 'evict', 'landlord', 'tenant', 'fraud', 'debited', 'fir', 'notice', 'slap', 'keys', 'mrp', 'helpline'].includes(t)
+  );
+
+  const isCapabilityQuery = !hasFactualScenario && (
+    (wordCount <= 6 && capabilityExactPhrases.some((pattern) => query.includes(pattern))) ||
+    (wordCount <= 2 && tokens.includes('help'))
+  );
 
   if (isCapabilityQuery) {
     const fullAnswer = `### ⚖️ About NyayaSetu AI & What I Can Do
@@ -830,13 +852,6 @@ Please feel free to describe any legal or citizen dispute you are facing!`;
     };
   }
 
-  // =========================================================================
-  // INTENT 4.5: DEEP SCENARIO UNDERSTANDING & CITIZEN FACT ANALYSIS
-  // =========================================================================
-  const scenarioMatch = matchLegalScenario(query, rawQuery);
-  if (scenarioMatch) {
-    return scenarioMatch;
-  }
 
   // =========================================================================
   // INTENT 5: SHORT / AMBIGUOUS SINGLE-TOPIC CLARIFICATIONS

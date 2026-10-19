@@ -18,6 +18,7 @@ import Badge from '../components/common/Badge';
 import toast from 'react-hot-toast';
 import { AI_SUGGESTED_QUESTIONS, RIGHTS_CATEGORIES_DATA } from '../data/mockData';
 import { matchLegalScenario } from '../data/legalScenarios';
+import { analyzeCitizenCase } from '../data/legalReasoningEngine';
 
 // Markdown formatters for bot message bubbles
 const renderInlineFormatting = (text) => {
@@ -167,9 +168,30 @@ export const LegalChatbot = () => {
     const tokens = qLower.replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
     const wordCount = tokens.length;
 
+    // PRIORITY 1: AUTONOMOUS DEDUCTIVE LEGAL REASONING ENGINE
+    const reasoned = analyzeCitizenCase(query, query);
+    if (reasoned) {
+      return {
+        text: reasoned.fullAnswer,
+        citations: reasoned.applicableLaws || []
+      };
+    }
+
+    // PRIORITY 2: PRE-INDEXED LEGAL SCENARIOS
+    const scenario = matchLegalScenario(query, query);
+    if (scenario) {
+      return {
+        text: scenario.fullAnswer,
+        citations: scenario.applicableLaws || []
+      };
+    }
+
     // 1. GREETING INTENT
     const greetings = ['hi', 'hello', 'hey', 'namaste', 'namaskar', 'pranam', 'vanakkam', 'adab'];
-    if (tokens.some((t) => greetings.includes(t)) && wordCount <= 3) {
+    const hasLegalKeyword = tokens.some((t) =>
+      ['bank', 'cheque', 'upi', 'otp', 'police', 'builder', 'salary', 'landlord', 'tenant', 'fraud', 'debited', 'fir', 'notice', 'slap', 'mrp', 'helpline'].includes(t)
+    );
+    if (tokens.some((t) => greetings.includes(t)) && wordCount <= 3 && !hasLegalKeyword) {
       return {
         text: `### 🙏 Namaste! I am NyayaSetu AI\n\n` +
           `I am your personal **Indian Citizen Legal Rights & Welfare Advisor**. I can help you understand your legal protections, check welfare scheme eligibility, and provide actionable dispute resolution steps under Indian law.\n\n` +
@@ -187,8 +209,8 @@ export const LegalChatbot = () => {
     }
 
     // 2. CAPABILITY INTENT
-    const capabilityKeywords = ['what can you do', 'what do you do', 'who are you', 'how can you help', 'help', 'features', 'about you'];
-    if (capabilityKeywords.some((p) => qLower.includes(p)) || (wordCount <= 2 && tokens.includes('help'))) {
+    const capabilityKeywords = ['what can you do', 'what do you do', 'who are you', 'how can you help', 'what are your features', 'about you', 'what is nyayasetu'];
+    if (!hasLegalKeyword && wordCount <= 6 && (capabilityKeywords.some((p) => qLower.includes(p)) || (wordCount <= 2 && tokens.includes('help')))) {
       return {
         text: `### ⚖️ About NyayaSetu AI & Citizen Advisory\n\n` +
           `**NyayaSetu** (*"Bridge to Justice"*) is an AI-powered legal advisory engine designed for Indian citizens.\n\n` +
@@ -210,15 +232,6 @@ export const LegalChatbot = () => {
           `Knowing your statutory rights is your greatest protection as a citizen. If you need to generate a formal notice or check government welfare schemes, NyayaSetu is always here for you.\n\n` +
           `*Stay empowered and know your rights! ⚖️*`,
         citations: []
-      };
-    }
-
-    // 3.5. DEEP SCENARIO UNDERSTANDING
-    const scenario = matchLegalScenario(query, query);
-    if (scenario) {
-      return {
-        text: scenario.fullAnswer,
-        citations: scenario.applicableLaws || []
       };
     }
 
