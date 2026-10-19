@@ -15,6 +15,9 @@ export const askQuestion = async (req, res, next) => {
     const rawQuestion = req.body.question || req.body.query || req.body.text || req.body.message;
     const category = req.body.category || null;
     const language = req.body.language || 'en';
+    const userKey = req.body.userKey || req.body.apiKey || null;
+    const userProvider = req.body.userProvider || req.body.provider || 'groq';
+    const ollamaModel = req.body.ollamaModel || 'llama3';
 
     if (!rawQuestion || typeof rawQuestion !== 'string' || rawQuestion.trim() === '') {
       return res.status(400).json({
@@ -25,8 +28,12 @@ export const askQuestion = async (req, res, next) => {
 
     const questionText = rawQuestion.trim();
 
-    // Process question via AI helper (Gemini or enriched legal knowledge engine)
-    const result = await getLegalAiResponse(questionText, category, language);
+    // Process question via Free AI Agent (Groq / Gemini / OpenRouter / Ollama) or enriched legal knowledge engine
+    const result = await getLegalAiResponse(questionText, category, language, {
+      userKey,
+      userProvider,
+      ollamaModel
+    });
 
     // Verify against Ground-Truth Legal API & Official Statutes (Zero Hallucination Grounding)
     const verifiedData = await fetchVerifiedLegalSources(questionText, result.applicableLaws || []);

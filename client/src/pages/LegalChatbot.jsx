@@ -12,9 +12,12 @@ import {
   FaInfoCircle,
   FaShieldAlt,
   FaCopy,
-  FaCheck
+  FaCheck,
+  FaSlidersH,
+  FaExternalLinkAlt
 } from 'react-icons/fa';
 import Badge from '../components/common/Badge';
+import Modal from '../components/common/Modal';
 import toast from 'react-hot-toast';
 import { AI_SUGGESTED_QUESTIONS, RIGHTS_CATEGORIES_DATA } from '../data/mockData';
 import { matchLegalScenario } from '../data/legalScenarios';
@@ -161,6 +164,18 @@ export const LegalChatbot = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [copiedId, setCopiedId] = useState(null);
   const chatContainerRef = useRef(null);
+
+  // Free AI Agent Configuration (Groq, Gemini, OpenRouter, Ollama)
+  const [aiConfig, setAiConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem('nyayasetu_ai_config');
+      return saved ? JSON.parse(saved) : { provider: 'groq', apiKey: '', ollamaModel: 'llama3' };
+    } catch {
+      return { provider: 'groq', apiKey: '', ollamaModel: 'llama3' };
+    }
+  });
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [tempConfig, setTempConfig] = useState(aiConfig);
 
   const categories = [
     'All',
@@ -366,13 +381,17 @@ export const LegalChatbot = () => {
         const response = await api.post('/legal/query', {
           question: text.trim(),
           query: text.trim(),
-          category: activeCategory !== 'All' ? activeCategory.toLowerCase() : undefined
+          category: activeCategory !== 'All' ? activeCategory.toLowerCase() : undefined,
+          userKey: aiConfig.apiKey ? aiConfig.apiKey.trim() : undefined,
+          userProvider: aiConfig.provider || 'groq',
+          ollamaModel: aiConfig.ollamaModel || 'llama3',
         });
         const d = response.data;
         botResponseData = {
           text: d.fullAnswer || d.answer || d.response || d.summary || d.message,
           citations: d.applicableLaws || d.citations || d.laws || [],
           category: d.categoryTitle || d.category,
+          aiModel: d.aiModel || null,
           liveLegalLinks: d.liveLegalLinks || [],
           verifiedSources: d.verifiedSources || [],
           legalDatabaseStatus: d.legalDatabaseStatus || null,
@@ -390,6 +409,7 @@ export const LegalChatbot = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         text: botResponseData.text,
         citations: botResponseData.citations || [],
+        aiModel: botResponseData.aiModel || null,
         liveLegalLinks: botResponseData.liveLegalLinks || [],
         verifiedSources: botResponseData.verifiedSources || [],
         legalDatabaseStatus: botResponseData.legalDatabaseStatus || null,
@@ -454,6 +474,21 @@ export const LegalChatbot = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setTempConfig(aiConfig);
+              setShowAiModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-primary-800 bg-primary-50 hover:bg-primary-100 rounded-lg border border-primary-200 transition-colors shadow-xs"
+            title="Configure Free AI Agent (Groq / Gemini / OpenRouter / Ollama)"
+          >
+            <FaSlidersH className="w-3 h-3 text-primary-600" />
+            <span>AI Model Settings</span>
+            {aiConfig.apiKey && (
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Custom AI Key Active" />
+            )}
+          </button>
           <button
             type="button"
             onClick={handleClearChat}
@@ -525,12 +560,21 @@ export const LegalChatbot = () => {
                         : 'bg-primary-800 text-white shadow-md'
                     }`}
                   >
-                    {/* Ground-Truth Legal Database Verification Badge */}
-                    {isBot && (msg.legalDatabaseStatus || (msg.liveLegalLinks && msg.liveLegalLinks.length > 0)) && (
-                      <div className="mb-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <FaShieldAlt className="w-3 h-3 text-emerald-600" />
-                        <span>{msg.legalDatabaseStatus || 'Verified via Indian Kanoon & Official Statutes'}</span>
+                    {/* Model & Ground-Truth Verification Badges */}
+                    {isBot && (
+                      <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+                        {msg.aiModel && (
+                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                            <span>🤖 {msg.aiModel}</span>
+                          </div>
+                        )}
+                        {(msg.legalDatabaseStatus || (msg.liveLegalLinks && msg.liveLegalLinks.length > 0)) && (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <FaShieldAlt className="w-3 h-3 text-emerald-600" />
+                            <span>{msg.legalDatabaseStatus || 'Verified via Indian Kanoon & Official Statutes'}</span>
+                          </div>
+                        )}
                       </div>
                     )}
 
@@ -679,6 +723,158 @@ export const LegalChatbot = () => {
           </div>
         </div>
       </div>
+
+      {/* Free AI Agent Settings Modal */}
+      <Modal
+        isOpen={showAiModal}
+        onClose={() => setShowAiModal(false)}
+        title="⚙️ Connect Free AI Agent"
+        subtitle="Power Nyaya AI with 100% Free generative models (Groq Cloud, Gemini, OpenRouter, or Local Ollama)"
+        maxWidth="max-w-xl"
+        footer={
+          <div className="flex items-center justify-between w-full">
+            <button
+              type="button"
+              onClick={() => {
+                const reset = { provider: 'groq', apiKey: '', ollamaModel: 'llama3' };
+                setTempConfig(reset);
+                setAiConfig(reset);
+                localStorage.removeItem('nyayasetu_ai_config');
+                toast.success('Reset to default Ground-Truth Engine');
+                setShowAiModal(false);
+              }}
+              className="text-xs text-red-600 hover:text-red-700 underline font-medium"
+            >
+              Reset to Ground-Truth Engine
+            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAiModal(false)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAiConfig(tempConfig);
+                  try {
+                    localStorage.setItem('nyayasetu_ai_config', JSON.stringify(tempConfig));
+                  } catch (e) {}
+                  setShowAiModal(false);
+                  toast.success('AI Settings Connected Successfully!');
+                }}
+                className="px-4 py-2 text-xs font-semibold text-white bg-primary-800 hover:bg-primary-900 rounded-lg shadow-sm transition-colors"
+              >
+                Save & Connect
+              </button>
+            </div>
+          </div>
+        }
+      >
+        <div className="space-y-4 py-2">
+          {/* Provider Selector */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wide">
+              Select Free AI Provider
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { id: 'groq', name: 'Groq Cloud (Free)', desc: 'Meta Llama 3.3 70B & DeepSeek R1', tag: 'Fastest ⚡' },
+                { id: 'gemini', name: 'Google Gemini (Free)', desc: 'Gemini 1.5 Flash (1500 req/day)', tag: 'Popular 🤖' },
+                { id: 'openrouter', name: 'OpenRouter (Free)', desc: 'Free Community Router', tag: 'Open 🌐' },
+                { id: 'ollama', name: 'Local Ollama (Offline)', desc: 'Runs 100% locally on PC', tag: 'Zero Key 🔒' },
+              ].map((prov) => (
+                <button
+                  key={prov.id}
+                  type="button"
+                  onClick={() => setTempConfig((prev) => ({ ...prev, provider: prov.id }))}
+                  className={`p-3 text-left rounded-xl border text-xs transition-all ${
+                    tempConfig.provider === prov.id
+                      ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-500/20'
+                      : 'border-slate-200 hover:border-slate-300 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-slate-900">{prov.name}</span>
+                    <span className="text-[10px] font-semibold bg-primary-100 text-primary-800 px-1.5 py-0.5 rounded">
+                      {prov.tag}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500">{prov.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Provider Specific Details & Key Input */}
+          {tempConfig.provider !== 'ollama' ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-slate-700">
+                  {tempConfig.provider === 'groq' && 'Groq API Key (100% Free - Zero Credit Card)'}
+                  {tempConfig.provider === 'gemini' && 'Google Gemini API Key (100% Free Tier)'}
+                  {tempConfig.provider === 'openrouter' && 'OpenRouter API Key (Free Models)'}
+                </label>
+                <a
+                  href={
+                    tempConfig.provider === 'groq'
+                      ? 'https://console.groq.com/keys'
+                      : tempConfig.provider === 'gemini'
+                      ? 'https://aistudio.google.com/app/apikey'
+                      : 'https://openrouter.ai/keys'
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary-700 hover:text-secondary-600 font-semibold inline-flex items-center gap-1"
+                >
+                  <span>Get Free Key (30 secs)</span>
+                  <FaExternalLinkAlt className="w-2.5 h-2.5" />
+                </a>
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  value={tempConfig.apiKey || ''}
+                  onChange={(e) => setTempConfig((prev) => ({ ...prev, apiKey: e.target.value }))}
+                  placeholder={
+                    tempConfig.provider === 'groq'
+                      ? 'gsk_...'
+                      : tempConfig.provider === 'gemini'
+                      ? 'AIzaSy...'
+                      : 'sk-or-v1-...'
+                  }
+                  className="w-full text-xs font-mono px-3.5 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 bg-slate-50 focus:bg-white"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500">
+                🔒 Your key stays strictly in your browser local storage and is sent only to complete legal queries. No billing is ever required.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700">
+              <p className="font-semibold text-slate-900">💻 Local Ollama Configuration</p>
+              <p>Ollama runs 100% locally on your machine at <code className="bg-slate-200 px-1 py-0.5 rounded font-mono">http://localhost:11434</code> without any API keys or internet connection.</p>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-600 mb-1">Ollama Model Name:</label>
+                <input
+                  type="text"
+                  value={tempConfig.ollamaModel || 'llama3'}
+                  onChange={(e) => setTempConfig((prev) => ({ ...prev, ollamaModel: e.target.value }))}
+                  placeholder="llama3, deepseek-r1, or mistral"
+                  className="w-full text-xs font-mono px-3 py-1.5 rounded border border-slate-300 bg-white"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Fallback Notice */}
+          <div className="p-2.5 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-amber-800 leading-relaxed">
+            💡 <strong>Zero Failure Guarantee:</strong> Even if your free quota runs out or the network drops, NyayaSetu instantly falls back to its offline Statutory Deductive Reasoning Engine and Indian Kanoon database so you always get precise answers.
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
