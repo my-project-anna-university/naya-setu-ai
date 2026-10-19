@@ -4,6 +4,8 @@
  * citizen remedies, actionable guidance, and national emergency helplines.
  */
 
+import { matchLegalScenario } from './legalScenarios.js';
+
 export const legalCategories = [
   {
     id: 'consumer',
@@ -826,6 +828,14 @@ Please feel free to describe any legal or citizen dispute you are facing!`;
       sourceRef: 'Constitution of India',
       fullAnswer,
     };
+  }
+
+  // =========================================================================
+  // INTENT 4.5: DEEP SCENARIO UNDERSTANDING & CITIZEN FACT ANALYSIS
+  // =========================================================================
+  const scenarioMatch = matchLegalScenario(query, rawQuery);
+  if (scenarioMatch) {
+    return scenarioMatch;
   }
 
   // =========================================================================

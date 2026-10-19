@@ -17,6 +17,7 @@ import {
 import Badge from '../components/common/Badge';
 import toast from 'react-hot-toast';
 import { AI_SUGGESTED_QUESTIONS, RIGHTS_CATEGORIES_DATA } from '../data/mockData';
+import { matchLegalScenario } from '../data/legalScenarios';
 
 // Markdown formatters for bot message bubbles
 const renderInlineFormatting = (text) => {
@@ -209,6 +210,15 @@ export const LegalChatbot = () => {
           `Knowing your statutory rights is your greatest protection as a citizen. If you need to generate a formal notice or check government welfare schemes, NyayaSetu is always here for you.\n\n` +
           `*Stay empowered and know your rights! ⚖️*`,
         citations: []
+      };
+    }
+
+    // 3.5. DEEP SCENARIO UNDERSTANDING
+    const scenario = matchLegalScenario(query, query);
+    if (scenario) {
+      return {
+        text: scenario.fullAnswer,
+        citations: scenario.applicableLaws || []
       };
     }
 
