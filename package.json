@@ -1,0 +1,37 @@
+{
+  "name": "nyayasetu",
+  "version": "1.0.0",
+  "description": "NyayaSetu — AI Connecting Citizens with Legal Rights & Government Services",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\" --names \"SERVER,CLIENT\" --prefix-colors \"blue,green\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "server:start": "npm run start --prefix server",
+    "client:build": "npm run build --prefix client",
+    "build": "npm run client:build",
+    "install:server": "npm install --prefix server",
+    "install:client": "npm install --prefix client",
+    "install:all": "npm install && npm run install:server && npm run install:client",
+    "seed": "npm run seed --prefix server",
+    "test": "echo \"Running test suites...\" && npm run test --prefix server --if-present && npm run test --prefix client --if-present"
+  },
+  "keywords": [
+    "nyayasetu",
+    "legal-tech",
+    "ai-legal-assistant",
+    "indian-law",
+    "citizen-rights",
+    "government-schemes",
+    "mern-stack",
+    "react",
+    "nodejs",
+    "mongodb"
+  ],
+  "author": "Anush S",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
