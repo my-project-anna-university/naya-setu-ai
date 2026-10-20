@@ -16,7 +16,6 @@
 
 Developed as a **Master of Computer Applications (MCA) Semester IV Project**:
 - **Author / Developer**: Anush S
-- **Project Guide**: Dr. M. Vijayalakshmi
 - **Academic Year**: 2026
 - **Domain**: Legal-Tech / Civic-Tech / Artificial Intelligence
 
