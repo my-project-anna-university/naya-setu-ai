@@ -307,11 +307,3 @@ The NyayaSetu API is accessible under `/api/v1` (with server root health check a
 ## 📜 License
 
 This project is open-source and licensed under the terms of the [MIT License](file:///C:/Users/DELL/My-project/nyayasetu/LICENSE).
-
----
-
-## 🙏 Acknowledgments
-
-- **Dr. M. Vijayalakshmi**, Project Guide, for invaluable guidance and academic supervision throughout the development of this MCA project.
-- **National Legal Services Authority (NALSA)**, **Ministry of Law and Justice**, and **Digital India** for publishing statutory data, public portals, and citizen welfare schemas.
-- **Open Source Community** for tools including React, Vite, Express, Mongoose, and Tailwind CSS.
