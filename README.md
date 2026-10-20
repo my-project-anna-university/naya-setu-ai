@@ -163,9 +163,41 @@ Run both backend Express server and frontend React client concurrently:
 npm run dev
 ```
 
-- **Frontend Client**: `http://localhost:5173`
+- **Frontend Client**: `http://localhost:3000` (or `http://localhost:5173` on Vite dev)
 - **Backend API**: `http://localhost:5000`
-- **API Health Check**: `http://localhost:5000/api/health`
+- **API Health Check**: `http://localhost:5000/api/legal/categories`
+
+---
+
+## 🐳 Running with Docker (Recommended)
+
+NyayaSetu includes multi-stage containerization for both frontend and backend along with MongoDB orchestration via Docker Compose.
+
+### 1-Click Launch with Docker Compose
+```bash
+# Build and run MongoDB, Backend API, and Nginx-fronted Frontend
+docker compose up -d --build
+```
+
+### Services & Port Mapping
+- **Frontend SPA (Nginx Alpine)**: [http://localhost:3000](http://localhost:3000) (reverse-proxies `/api` → `backend:5000`)
+- **Backend API (Node.js 20 Alpine)**: [http://localhost:5000](http://localhost:5000)
+- **MongoDB (v7)**: `localhost:27017`
+
+### Useful Docker Commands
+```bash
+# View live logs
+docker compose logs -f
+
+# Check container health status
+docker compose ps
+
+# Stop all services
+docker compose down
+
+# Stop and purge database volume
+docker compose down -v
+```
 
 ---
 
